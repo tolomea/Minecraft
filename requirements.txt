@@ -1,3 +1,4 @@
+inflection
 ipython
 isort
 flake8
