@@ -1,0 +1,9 @@
+ipython
+isort
+flake8
+flake8-commas
+flake8-comprehensions
+flake8-print
+flake8-quotes
+flake8-tidy-imports
+pyglet
