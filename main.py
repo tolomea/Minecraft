@@ -667,6 +667,9 @@ class Window(pyglet.window.Window):
                     break
         return tuple(p)
 
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.set_exclusive_mouse(True)
+
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
         amd modifier mappings.
@@ -730,6 +733,7 @@ class Window(pyglet.window.Window):
             Number representing any modifying keys that were pressed.
 
         """
+        self.set_exclusive_mouse(True)
         if symbol == key.W:
             self.strafe[0] -= 1
         elif symbol == key.S:
