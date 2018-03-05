@@ -46,8 +46,8 @@ def cube_vertices(x, y, z, n):
     return [
         x - n, y + n, z - n, x - n, y + n, z + n, x + n, y + n, z + n, x + n, y + n, z - n,  # top
         x - n, y - n, z - n, x + n, y - n, z - n, x + n, y - n, z + n, x - n, y - n, z + n,  # bottom
-        x - n, y - n, z - n, x - n, y - n, z + n, x - n, y + n, z + n, x - n, y + n, z - n,  # left
         x + n, y - n, z + n, x + n, y - n, z - n, x + n, y + n, z - n, x + n, y + n, z + n,  # right
+        x - n, y - n, z - n, x - n, y - n, z + n, x - n, y + n, z + n, x - n, y + n, z - n,  # left
         x - n, y - n, z + n, x + n, y - n, z + n, x + n, y + n, z + n, x - n, y + n, z + n,  # front
         x + n, y - n, z - n, x - n, y - n, z - n, x - n, y + n, z - n, x + n, y + n, z - n,  # back
     ]
@@ -91,6 +91,17 @@ FACES = [
     (1, 0, 0),
     (0, 0, 1),
     (0, 0, -1),
+]
+
+UP, DOWN, LEFT, RIGHT, FRONT, BACK = range(6)
+
+FACE_NAMES = [
+    'up',
+    'down',
+    'right',
+    'left',
+    'front',
+    'back',
 ]
 
 
@@ -145,6 +156,9 @@ class Model(object):
 
         # Same mapping as `world` but only contains blocks that are shown.
         self.shown = {}
+
+        # Same mapping as `world` but contains block orientations
+        self.orientation = {}
 
         # Mapping from position to a pyglet `VertextList` for all shown blocks.
         self._shown = {}
@@ -233,7 +247,7 @@ class Model(object):
                 return True
         return False
 
-    def add_block(self, position, texture, immediate=True):
+    def add_block(self, position, texture, orientation=DOWN, immediate=True):  # GDW remove default orientation
         """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
@@ -250,6 +264,7 @@ class Model(object):
         if position in self.world:
             self.remove_block(position, immediate)
         self.world[position] = texture
+        self.orientation[position] = orientation
         self.sectors.setdefault(sectorize(position), []).append(position)
         if immediate:
             if self.exposed(position):
@@ -268,6 +283,7 @@ class Model(object):
 
         """
         del self.world[position]
+        del self.orientation[position]
         self.sectors[sectorize(position)].remove(position)
         if immediate:
             if position in self.shown:
@@ -670,6 +686,10 @@ class Window(pyglet.window.Window):
     def on_mouse_release(self, x, y, button, modifiers):
         self.set_exclusive_mouse(True)
 
+    def face_between_blocks(self, src, dest):
+        vector = tuple(a - b for a, b in zip(src, dest))
+        return FACES.index(vector)
+
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
         amd modifier mappings.
@@ -694,7 +714,8 @@ class Window(pyglet.window.Window):
                     ((button == mouse.LEFT) and (modifiers & key.MOD_CTRL)):
                 # ON OSX, control + left click = right click.
                 if previous:
-                    self.model.add_block(previous, self.block)
+                    orientation = self.face_between_blocks(block, previous)
+                    self.model.add_block(previous, self.block, orientation)
             elif button == pyglet.window.mouse.LEFT and block:
                 texture = self.model.world[block]
                 if texture != STONE:
