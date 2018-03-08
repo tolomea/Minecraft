@@ -8,6 +8,7 @@ from collections import deque
 
 import gl
 import glu
+
 import pyglet
 from pyglet import image
 from pyglet.graphics import TextureGroup

@@ -1,6 +1,6 @@
-from gatesym.gates import block, And, Tie
 from gatesym.blocks.latches import register
 from gatesym.blocks.mux import address_decode, word_switch
+from gatesym.gates import And, Tie, block
 from gatesym.utils import tie_word
 
 

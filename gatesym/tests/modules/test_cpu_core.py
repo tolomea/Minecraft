@@ -1,9 +1,9 @@
-from gatesym.core import Network
-from gatesym.gates import Switch, Placeholder, And
-from gatesym.test_utils import BinaryIn, BinaryOut
-from gatesym.modules.cpu_core import cpu_core
-from gatesym.utils import PlaceholderWord
 from gatesym.blocks import mux
+from gatesym.core import Network
+from gatesym.gates import And, Placeholder, Switch
+from gatesym.modules.cpu_core import cpu_core
+from gatesym.test_utils import BinaryIn, BinaryOut
+from gatesym.utils import PlaceholderWord
 
 
 def test_basic():

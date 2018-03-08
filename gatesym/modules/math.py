@@ -1,9 +1,9 @@
-from gatesym.gates import block, And
-from gatesym.utils import pad, shuffle_right
-from gatesym.blocks.latches import register
 from gatesym.blocks.adders import ripple_adder, ripple_subtractor
+from gatesym.blocks.latches import register
 from gatesym.blocks.multipliers import ripple_multiplier
-from gatesym.blocks.mux import word_switch, address_decode
+from gatesym.blocks.mux import address_decode, word_switch
+from gatesym.gates import And, block
+from gatesym.utils import pad, shuffle_right
 
 
 @block

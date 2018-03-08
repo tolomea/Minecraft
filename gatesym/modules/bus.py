@@ -1,5 +1,5 @@
-from gatesym.gates import block, And
-from gatesym.blocks.mux import word_switch, address_matches
+from gatesym.blocks.mux import address_matches, word_switch
+from gatesym.gates import And, block
 
 
 @block

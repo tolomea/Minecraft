@@ -1,10 +1,9 @@
 import pytest
-
 from gatesym import core, test_utils
 from gatesym.blocks import mux
 
 
-@pytest.mark.parametrize("addr,a,b,c,d", [
+@pytest.mark.parametrize('addr,a,b,c,d', [
     (0, True, False, False, False),
     (1, False, True, False, False),
     (2, False, False, True, False),

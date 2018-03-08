@@ -1,4 +1,4 @@
-from gatesym.gates import And, Or, Not, block, Tie
+from gatesym.gates import And, Not, Or, Tie, block
 
 
 @block

@@ -2,11 +2,10 @@
 
 import collections
 
+TIE, SWITCH, AND, OR = ['tie', 'switch', 'and', 'or']
 
-TIE, SWITCH, AND, OR = ["tie", "switch", "and", "or"]
 
-
-class _Gate(collections.namedtuple("_Gate", "type_, inputs, neg_inputs, outputs, cookies")):
+class _Gate(collections.namedtuple('_Gate', 'type_, inputs, neg_inputs, outputs, cookies')):
     # internal gate format
 
     def __new__(cls, type_, cookies):
@@ -100,7 +99,8 @@ class Network(object):
         if self._watches:
             name_len = max(len(name) for name, _, _ in self._watches)
             for (name, _, _), row in zip(self._watches, zip(*self._log)):
-                print("{0:{1}} {2}".format(name, name_len, "".join(str(i) for i in row)))
+                entry = ''.join(str(i) for i in row)
+                print(f'{name:name_len} {entry}')
             print()
 
     def get_stats(self):
@@ -112,9 +112,9 @@ class Network(object):
                 gates_by_type_and_inputs[gate.type_, len(gate.inputs) + len(gate.neg_inputs)] += 1
 
         return {
-            "size": self.get_size(),
-            "gates_by_type": gates_by_type,
-            "gates_by_type_and_inputs": gates_by_type_and_inputs,
+            'size': self.get_size(),
+            'gates_by_type': gates_by_type,
+            'gates_by_type_and_inputs': gates_by_type_and_inputs,
         }
 
     def get_size(self):

@@ -1,4 +1,4 @@
-from gatesym.gates import Not, block, nand, Placeholder
+from gatesym.gates import Not, Placeholder, block, nand
 
 
 @block

@@ -1,7 +1,7 @@
 from gatesym.core import Network
 from gatesym.gates import Switch
-from gatesym.test_utils import BinaryIn, BinaryOut
 from gatesym.modules.bus import bus
+from gatesym.test_utils import BinaryIn, BinaryOut
 
 
 def test_basic():

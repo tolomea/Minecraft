@@ -1,4 +1,5 @@
 import inflection
+
 from pyglet import gl
 
 used = set()

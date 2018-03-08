@@ -1,6 +1,6 @@
 import collections
 
-from gatesym.gates import Tie, Placeholder, Or
+from gatesym.gates import Or, Placeholder, Tie
 
 
 def pad(word, length, value=False):

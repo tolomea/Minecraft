@@ -1,5 +1,4 @@
 import pytest
-
 from gatesym import core
 
 
@@ -32,7 +31,7 @@ def test_0_and():
     assert network.read(idx) is True
 
 
-@pytest.mark.parametrize("input_type", [core.SWITCH, core.TIE])
+@pytest.mark.parametrize('input_type', [core.SWITCH, core.TIE])
 def test_1_and(input_type):
     network = core.Network()
     a_idx = network.add_gate(input_type)
@@ -55,7 +54,7 @@ def test_1_and(input_type):
     assert network.read(idx) is False
 
 
-@pytest.mark.parametrize("input_type", [core.SWITCH, core.TIE])
+@pytest.mark.parametrize('input_type', [core.SWITCH, core.TIE])
 def test_2_and(input_type):
     network = core.Network()
     a_idx = network.add_gate(input_type)
@@ -104,7 +103,7 @@ def test_0_or():
     assert network.read(idx) is False
 
 
-@pytest.mark.parametrize("input_type", [core.SWITCH, core.TIE])
+@pytest.mark.parametrize('input_type', [core.SWITCH, core.TIE])
 def test_1_or(input_type):
     network = core.Network()
     a_idx = network.add_gate(input_type)
@@ -127,7 +126,7 @@ def test_1_or(input_type):
     assert network.read(idx) is False
 
 
-@pytest.mark.parametrize("input_type", [core.SWITCH, core.TIE])
+@pytest.mark.parametrize('input_type', [core.SWITCH, core.TIE])
 def test_2_or(input_type):
     network = core.Network()
     a_idx = network.add_gate(input_type)

@@ -1,7 +1,7 @@
-from gatesym.gates import block, And, Or
-from gatesym.blocks.latches import register
 from gatesym.blocks.adders import ripple_incr
-from gatesym.blocks.mux import address_decode, word_switch, word_mux
+from gatesym.blocks.latches import register
+from gatesym.blocks.mux import address_decode, word_mux, word_switch
+from gatesym.gates import And, Or, block
 from gatesym.utils import PlaceholderWord
 
 
@@ -47,13 +47,13 @@ def cpu_core(clock, data_in, pc_in, write_pc, debug=False):
     data_out = data
 
     if debug:
-        clock.watch("clock")
-        s0.watch("s0")
-        s1.watch("s1")
-        s2.watch("s2")
-        s3.watch("s3")
-        jumping.watch("jumping")
-        clock_pc.watch("clock pc")
-        write_out.watch("write out")
+        clock.watch('clock')
+        s0.watch('s0')
+        s1.watch('s1')
+        s2.watch('s2')
+        s3.watch('s3')
+        jumping.watch('jumping')
+        clock_pc.watch('clock pc')
+        write_out.watch('write out')
 
     return addr_out, data_out, write_out

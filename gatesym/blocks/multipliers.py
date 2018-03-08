@@ -1,5 +1,5 @@
-from gatesym.gates import And, Or, block
 from gatesym.blocks.adders import ripple_sum
+from gatesym.gates import And, Or, block
 from gatesym.utils import shuffle_right
 
 

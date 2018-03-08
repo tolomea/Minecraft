@@ -1,6 +1,6 @@
-from gatesym.gates import block, And, Or, Not
 from gatesym.blocks.latches import register
-from gatesym.blocks.mux import word_switch, address_decode
+from gatesym.blocks.mux import address_decode, word_switch
+from gatesym.gates import And, Not, Or, block
 
 
 @block

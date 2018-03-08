@@ -1,62 +1,62 @@
-from gatesym.gates import Switch
 from gatesym import core
-from gatesym.test_utils import BinaryOut
 from gatesym.computer import computer, symbols
+from gatesym.gates import Switch
+from gatesym.test_utils import BinaryOut
 
 
 def basic_add():
     return assemble(symbols, [], [
-        123, "ADD_A",
-        5, "ADD_B",
-        "ADD_R", "ADD_A",
-        67, "ADD_B",
-        "ADD_R", "PRINT",
+        123, 'ADD_A',
+        5, 'ADD_B',
+        'ADD_R', 'ADD_A',
+        67, 'ADD_B',
+        'ADD_R', 'PRINT',
     ])
 
 
 def loop():
-    return assemble(symbols, ["i"], [
-        1, "ADD_B",
-        "ADD_R", "ADD_A",
-        "i", "ADD_B",
-        "ADD_R", "i",
-        "i", "PRINT",
-        0, "JUMP",
+    return assemble(symbols, ['i'], [
+        1, 'ADD_B',
+        'ADD_R', 'ADD_A',
+        'i', 'ADD_B',
+        'ADD_R', 'i',
+        'i', 'PRINT',
+        0, 'JUMP',
     ])
 
 
 def fib():
     return assemble(symbols, [], [
-        0, "ADD_A",
-        1, "ADD_B",
-        1, "PRINT",
-        "loop:",
-        "ADD_R", "PRINT",
-        "ADD_R", "ADD_A",
-        "ADD_R", "PRINT",
-        "ADD_R", "ADD_B",
-        "loop", "JUMP",
+        0, 'ADD_A',
+        1, 'ADD_B',
+        1, 'PRINT',
+        'loop:',
+        'ADD_R', 'PRINT',
+        'ADD_R', 'ADD_A',
+        'ADD_R', 'PRINT',
+        'ADD_R', 'ADD_B',
+        'loop', 'JUMP',
     ])
 
 
 def primes():
-    return assemble(symbols, ["i"], [
+    return assemble(symbols, ['i'], [
         # j is in ADD_B
-        2, "ADD_A",
+        2, 'ADD_A',
 
         # i = 3
         # start:
         # j = 3
         # loop_start:
         # if i - j == 0: goto loop_else  # ran out of numbers to check so i is prime
-        3, "i",
-        "start:",
-        3, "ADD_B",
-        "loop_start:",
-        "i", "SUB_A",
-        "ADD_B", "SUB_B",
-        "loop_else", "JUMP_DEST",
-        "SUB_R", "JUMP_IF_ZERO",
+        3, 'i',
+        'start:',
+        3, 'ADD_B',
+        'loop_start:',
+        'i', 'SUB_A',
+        'ADD_B', 'SUB_B',
+        'loop_else', 'JUMP_DEST',
+        'SUB_R', 'JUMP_IF_ZERO',
 
         # tmp is in SUB_A
         # tmp = i
@@ -66,51 +66,51 @@ def primes():
         # tmp -= j
         # goto mod_loop
         # mod_end:
-        "i", "SUB_A",
-        "ADD_B", "SUB_B",
-        "mod_end", "JUMP_DEST",
-        "mod_loop:",
-        "SUB_C", "JUMP_IF_NON_ZERO",
-        "SUB_R", "SUB_A",
-        "mod_loop", "JUMP",
-        "mod_end:",
+        'i', 'SUB_A',
+        'ADD_B', 'SUB_B',
+        'mod_end', 'JUMP_DEST',
+        'mod_loop:',
+        'SUB_C', 'JUMP_IF_NON_ZERO',
+        'SUB_R', 'SUB_A',
+        'mod_loop', 'JUMP',
+        'mod_end:',
 
         # if tmp == 0: goto loop_end  # divides equally, not prime
-        "loop_end", "JUMP_DEST",
-        "SUB_A", "JUMP_IF_ZERO",
+        'loop_end', 'JUMP_DEST',
+        'SUB_A', 'JUMP_IF_ZERO',
 
         # j += 2
-        "ADD_R", "ADD_B",
+        'ADD_R', 'ADD_B',
 
         # goto loop_start
-        "loop_start", "JUMP",
+        'loop_start', 'JUMP',
 
         # loop_else:
         # print i
-        "loop_else:",
-        "i", "PRINT",
+        'loop_else:',
+        'i', 'PRINT',
 
         # loop_end:
         # i += 2
-        "loop_end:",
-        "i", "ADD_B",
-        "ADD_R", "i",
+        'loop_end:',
+        'i', 'ADD_B',
+        'ADD_R', 'i',
 
         # goto start
-        "start", "JUMP",
+        'start', 'JUMP',
     ])
 
 
 def assemble(symbols, variables, code):
     symbols = dict(symbols)
     for offset, name in enumerate(variables):
-        symbols[name] = symbols["_RAM"] + offset
+        symbols[name] = symbols['_RAM'] + offset
 
     # collect jump labels
     i = 0
     for c in code:
-        if isinstance(c, str) and c.endswith(":"):
-            symbols[c[:-1]] = symbols["_LIT"] + i
+        if isinstance(c, str) and c.endswith(':'):
+            symbols[c[:-1]] = symbols['_LIT'] + i
         else:
             i += 1
 
@@ -118,10 +118,10 @@ def assemble(symbols, variables, code):
     res = []
     for c in code:
         if isinstance(c, str):
-            if not c.endswith(":"):
+            if not c.endswith(':'):
                 res.append(symbols[c])
         else:
-            res.append(symbols["_LIT"] + c)
+            res.append(symbols['_LIT'] + c)
     return res
 
 

@@ -29,20 +29,20 @@ class Node(object):
     def all_outputs(self):
         return self.outputs
 
-    def find(self, path, location=""):
+    def find(self, path, location=''):
         """ look up a related node by path """
         if location:
-            location = location + "."
+            location = location + '.'
         location = location + self.name
-        parts = path.split(".", 1)
+        parts = path.split('.', 1)
         head = parts[0]
-        tail = parts[1] if len(parts) > 1 else ""
+        tail = parts[1] if len(parts) > 1 else ''
         if head:
             for l in self.all_outputs:
                 if l.name == head:
                     return l.find(tail, location)
             else:
-                raise ValueError("at " + location + " expected one of " + repr([o.name for o in self.outputs]))
+                raise ValueError('at ' + location + 'expected one of ' + repr([o.name for o in self.outputs]))
         else:
             return self
 
@@ -59,11 +59,11 @@ class Node(object):
         trace the first inputs back until we find a node with no inputs and return the path from there to here
         this could be better, jumping across blocks for example
         """
-        possible_inputs = [i for i in self.inputs if ")" not in i.name]
+        possible_inputs = [i for i in self.inputs if ')' not in i.name]
 
         if possible_inputs:
             print([i.name for i in self.inputs])
-            return possible_inputs[0].full_name() + "." + self.name
+            return possible_inputs[0].full_name() + '.' + self.name
         else:
             print([i.name for i in self.inputs])
             return self.name
@@ -81,7 +81,7 @@ class Gate(Node):
             input_.connect_output(self, False)
 
     def __repr__(self):
-        return "{self.__class__.__name__}<{self.index}>({value})".format(self=self, value=self.read())
+        return f'{self.__class__.__name__}<{self.index}>({self.read()})'
 
     def read(self):
         return self.network.read(self.index)
@@ -95,7 +95,7 @@ class Tie(Gate):
     def __init__(self, network, value):
         value = bool(value)
         index = network.add_gate(core.TIE, self)
-        super().__init__(network, index, "tie")
+        super().__init__(network, index, 'tie')
         self.network.write(self.index, value)
 
 
@@ -104,7 +104,7 @@ class Switch(Gate):
     def __init__(self, network, value=False):
         value = bool(value)
         index = network.add_gate(core.SWITCH, self)
-        super().__init__(network, index, "switch")
+        super().__init__(network, index, 'switch')
         self.write(value)
 
     def write(self, value):
@@ -117,7 +117,7 @@ class And(Gate):
         assert inputs
         network = inputs[0].network
         index = network.add_gate(core.AND, self)
-        super().__init__(network, index, "and", inputs)
+        super().__init__(network, index, 'and', inputs)
 
 
 class Or(Gate):
@@ -126,7 +126,7 @@ class Or(Gate):
         assert inputs
         network = inputs[0].network
         index = network.add_gate(core.OR, self)
-        super().__init__(network, index, "or", inputs)
+        super().__init__(network, index, 'or', inputs)
 
 
 def nand(*inputs):
@@ -168,7 +168,7 @@ class Link(Node):
 class Not(Link):
 
     def __init__(self, node):
-        super().__init__(node, "not", None, False)
+        super().__init__(node, 'not', None, False)
 
     def read(self):
         return not self.node.read()
@@ -185,7 +185,7 @@ class Placeholder(Node):
     """ a placeholder we will replace with a real node later """
 
     def __init__(self, network):
-        super().__init__("placeholder")
+        super().__init__('placeholder')
         self.network = network
         self.connected = []
         self.attached = []
@@ -220,8 +220,8 @@ class Placeholder(Node):
 def link_factory(obj, name1, name2, block, is_output):
     """ wrap links around a bunch of nodes in an arbitrarily nested structure """
     if isinstance(obj, collections.Iterable):
-        if name1 and not name1.endswith("("):
-            name1 = name1 + ","
+        if name1 and not name1.endswith('('):
+            name1 = name1 + ','
         return [link_factory(o, name1 + str(i), name2, block, is_output) for i, o in enumerate(obj)]
     elif isinstance(obj, Node):
         link = Link(obj, name1 + name2, block, is_output)
@@ -249,7 +249,7 @@ def _find_network(thing):
     given a bunch of nested stuff find one that has a network property and return it
     the existance of this speaks to issues with how I'm handling the relations between blocks and nodes and the network
     """
-    if hasattr(thing, "network"):
+    if hasattr(thing, 'network'):
         return thing.network
     if isinstance(thing, collections.Iterable):
         for item in thing:
@@ -265,9 +265,9 @@ def _block(func, *args):
 
     block = Block(func.__name__)
 
-    args = link_factory(args, func.__name__ + "(", "", block, False)
+    args = link_factory(args, func.__name__ + '(', '', block, False)
     res = func(*args)
-    res = link_factory(res, "", ")", block, True)
+    res = link_factory(res, '', ')', block, True)
 
     block.size = network.get_size() - old_size
 
