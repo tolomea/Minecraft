@@ -1,0 +1,178 @@
+muxes
+    mux n address, 2**n inputs
+
+    flat address
+        for each input we have an And spanning all the address lines
+        2**n * n
+
+    tree address
+        binary tree of pairs of 2 input Ands one tree level per address line
+        except for the top level which isn't necessary
+        2 * (2**(n + 1) - 4)  =  4*(2**n - 2)
+
+    flat demux
+        for each output we have an And spanning all the address lines and the input
+        2**n * (n+1)
+
+    tree demux
+        binary tree of pairs of 2 input Ands one tree level per address line
+        2 * (2**(n + 1) - 2)  =  4*(2**n - 1)
+
+    flat mux
+        for each input we have an And spanning all the address lines and input bit
+        spanning all of the Ands is a huge Or
+        ands(2**n * (n+1)) + ors(2**n)  =  2**n * (n+2)
+
+    tree mux
+        binary tree of pairs of 2 input Ands joined by ors, one tree level per addres line
+        2 * (ands(2**(n+1)-2) + ors(2**n - 1))  =  6*(2**n - 1)
+
+    to increase mux word size we can replicate the whole structure
+    or have a shared address into a 2 input And per bit
+    with an Or across all the bits in the same position
+    for demux we can leave out the or
+
+
+mov machine
+    only instruction is address to address mov
+    everything else is mapped into register space
+    assume word size = address size = S
+    main loop is 4 stage
+        1: read pc
+        2: read pc + 1
+        3: fetch
+        4: store
+    bus
+        S address bits, only written by the core
+        S data bits, can be written by core or any module
+        clock line
+        r/w flag
+    low literal module
+        2^(s/2) address range
+        address bits reflected back
+    high literal module
+        2^(s/2) address range
+        address bits reflected back, shuffled by s/2
+    math modules
+        4 address range
+        2 inputs
+        1-2 outputs
+
+    Module(clock, write, address, data_in)->data_out
+        inputs from bus:
+            addr
+            data
+            write
+            clock
+        outputs to bus:
+            data
+
+    Bus(addr, write, [(addr_prefix, data_in)]) -> data_out, [write]
+        muxes write flag going out to modules and data going back to the core
+        inputs from core:
+            write
+        outputs to core:
+            data
+        inputs from modules:
+            data
+        outputs to modules:
+            write
+
+
+    Core(clock, data_in)->(addr, data_out, write)
+        registers: pc, addr, tmp
+        4 stage
+        0:
+            pc -> bus addr
+            bus data -> addr
+        1:
+            addr -> bus addr
+            bus data -> tmp
+            incr pc
+        2:
+            pc -> bus addr
+            bus data -> addr
+        3:
+            addr -> bus addr
+            tmp -> bus data
+            true -> bus write
+            incr pc
+
+        4 count incr -> address decode -> 3 -> bus write
+                                       -> 1 -> tmp write
+                     -> low bit -> pc write
+                                -> register switch (pc, addr) -> bus addr
+                                -> not -> addr write
+        bus data -> addr -> (see above)
+                 -> tmp -> bus data
+        pc -> (see above)
+           -> incr -> pc
+
+        pointers, we will add 0.5 and 2.5 steps which indirect addr if it's higest bit is set
+
+    Branching...
+        we can expose pc on the bus
+        jmp is just moving an address to pc
+        a literal scheme that works with pc offsets might be nice
+        conditional jumps could be 2 registers
+            one for the target and one for the condition
+            when condition is written if condition matches then we copy target to pc
+            we could have multiple condition registers for different conditional checks
+
+
+   +-----------------------------+
+   |                             |
+ +-----------------------------+ <--+
+ | |                           | |  |
+ | |         MODULES           <----+
+ | |                           | |  |
+ | +--^-----^-------^------------+  |
+ |    |     |       |     |    |    |
+ +------^-----^-------^--------+    |
+      | |   | |     | |   | |       |
+      +-+   +-+     |W|   |D|       |
+      |     |       |R|   |A|       |
+      |     |       |I|   |T|       |
+      |     |       |T|   |A|       |
+      |     |       |E|   | |       |
+      |    A|       | |   | |       |
+     D|    D|    +--------v-v--+    |
+     A|    D|    |             |    |
+     T|    R+---->     BUS     |    |
+     A|    E|    |             |    |
+      |    S|    +---^---------+    |
+      |    S|        |     |        |
+      |     |       W|    D|    +-------+
+      |     |       R|    A|    |       |
+      |     |       I|    T|    | CLOCK |
+      |     |       T|    A|    |       |
+      |     |       E|     |    +-------+
+      |     |        |     |        |
+    +----------------------v--+     |
+    |                         |     |
+    |          CORE           <-----+
+    |                         |
+    +-------------------------+
+
+
+network optimizations
+    no outputs delete
+    no inputs replace with tie
+    negative tie into and replaces
+    drop positive tie into and
+    one input add or or passes through
+    positive tie into or replaces
+    drop negative tie into or
+    same inputs merge
+
+evaluation optimizations
+    could identify subnets whose output can't currently impact anything and skip updating the subnet
+    for example in the cpu the adder listens to the data bus
+    but reevaluating the adder internals is irrelevant until the address lines point at it
+
+new core operations
+    need to split ties into ties and switches
+    delete
+    merge
+    remove link
+    
