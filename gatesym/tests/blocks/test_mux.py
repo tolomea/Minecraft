@@ -1,4 +1,5 @@
 import pytest
+
 from gatesym import core, test_utils
 from gatesym.blocks import mux
 

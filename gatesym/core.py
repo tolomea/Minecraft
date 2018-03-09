@@ -99,7 +99,7 @@ class Network(object):
     def print_log(self):
         self.record_log()
         if self._watches:
-            name_len = max(len(name) for name, _, _ in self._watches)
+            name_len = max(len(name) for name, _, _ in self._watches)  # flake8: noqa
             for (name, _, _), row in zip(self._watches, zip(*self._log)):
                 entry = ''.join(str(i) for i in row)
                 print(f'{name:name_len} {entry}')
