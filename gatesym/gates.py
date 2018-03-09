@@ -129,6 +129,15 @@ class Or(Gate):
         super().__init__(network, index, 'or', inputs)
 
 
+class Nor(Gate):
+
+    def __init__(self, *inputs):
+        assert inputs
+        network = inputs[0].network
+        index = network.add_gate(core.NOR, self)
+        super().__init__(network, index, 'nor', inputs)
+
+
 def nand(*inputs):
     return Not(And(*inputs))
 
