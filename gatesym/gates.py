@@ -38,11 +38,20 @@ class Node(object):
         head = parts[0]
         tail = parts[1] if len(parts) > 1 else ''
         if head:
+            if ':' in head:
+                head, count = head.split(':')
+                count = int(count)
+            else:
+                count = 0
+
             for l in self.all_outputs:
                 if l.name == head:
-                    return l.find(tail, location)
+                    if count:
+                        count -= 1
+                    else:
+                        return l.find(tail, location)
             else:
-                raise ValueError('at ' + location + 'expected one of ' + repr([o.name for o in self.outputs]))
+                raise ValueError(f'at {location} expected one of {repr([o.name for o in self.outputs])}')
         else:
             return self
 
@@ -111,22 +120,13 @@ class Switch(Gate):
         self.network.write(self.index, value)
 
 
-class And(Gate):
-
-    def __init__(self, *inputs):
-        assert inputs
-        network = inputs[0].network
-        index = network.add_gate(core.AND, self)
-        super().__init__(network, index, 'and', inputs)
+def And(*inputs):
+    inputs = [Not(i) for i in inputs]
+    return Nor(*inputs)
 
 
-class Or(Gate):
-
-    def __init__(self, *inputs):
-        assert inputs
-        network = inputs[0].network
-        index = network.add_gate(core.OR, self)
-        super().__init__(network, index, 'or', inputs)
+def Or(*inputs):
+    return Not(Nor(*inputs))
 
 
 class Nor(Gate):
