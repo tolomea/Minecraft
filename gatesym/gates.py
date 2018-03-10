@@ -120,15 +120,6 @@ class Switch(Gate):
         self.network.write(self.index, value)
 
 
-def And(*inputs):
-    inputs = [Not(i) for i in inputs]
-    return Nor(*inputs)
-
-
-def Or(*inputs):
-    return Not(Nor(*inputs))
-
-
 class Nor(Gate):
 
     def __init__(self, *inputs):
@@ -138,7 +129,20 @@ class Nor(Gate):
         super().__init__(network, index, 'nor', inputs)
 
 
-def nand(*inputs):
+def Not(node):
+    return Nor(node)
+
+
+def And(*inputs):
+    inputs = [Not(i) for i in inputs]
+    return Nor(*inputs)
+
+
+def Or(*inputs):
+    return Not(Nor(*inputs))
+
+
+def Nand(*inputs):
     return Not(And(*inputs))
 
 
@@ -172,10 +176,6 @@ class Link(Node):
             return self.block.outputs + self.outputs
         else:
             return self.outputs
-
-
-def Not(node):
-    return Nor(node)
 
 
 class Placeholder(Node):
