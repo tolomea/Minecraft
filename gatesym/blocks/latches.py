@@ -1,4 +1,5 @@
 from gatesym.gates import Nor, Not, Placeholder, block
+from gatesym.utils import invert
 
 
 @block
@@ -16,20 +17,25 @@ def gated_d_latch(data_, clock_):
 
 
 @block
-def ms_d_flop(data, clock, clock_):
+def ms_d_flop(data_, clock, clock_):
     """ a two stage latch that clocks data in on a positive edge and out on a negative edge """
-    latch, latch_ = gated_d_latch(Not(data), clock_)
+    latch, latch_ = gated_d_latch(data_, clock_)
     res, res_ = gated_d_latch(latch_, clock)
     return res, res_
 
 
 @block
-def register(data, clock, negate=False):
+def register(data, clock, negate_in=False, negate_out=False):
     """ a bank of ms_d_flops that share a clock line """
+    clock_ = Not(clock)
+    if not negate_in:
+        data_ = invert(data)
+    else:
+        data_ = data
     res = []
-    for i in data:
-        d, d_ = ms_d_flop(i, clock, Not(clock))
-        if negate:
+    for i_ in data_:
+        d, d_ = ms_d_flop(i_, clock, clock_)
+        if negate_out:
             res.append(d_)
         else:
             res.append(d)

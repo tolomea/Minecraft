@@ -1,7 +1,7 @@
 from gatesym.blocks.latches import register
 from gatesym.blocks.mux import address_decode, word_switch, word_switch_
 from gatesym.gates import And, Tie, block
-from gatesym.utils import tie_word
+from gatesym.utils import invert, tie_word
 
 
 @block
@@ -20,8 +20,9 @@ def memory(clock, write, address, data_in, size):
 
     # otherwise it's a simple pile of registers switched by the control lines
     registers = []
+    data_in_ = invert(data_in)
     for line in control_lines:
-        registers.append(register(data_in, And(line, clock, write), negate=True))
+        registers.append(register(data_in_, And(line, clock, write), negate_in=True, negate_out=True))
     return word_switch_(control_lines, *registers)
 
 

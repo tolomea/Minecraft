@@ -33,7 +33,7 @@ def test_ms_d_flop_basic():
     network = core.Network()
     clock = gates.Switch(network)
     data = gates.Switch(network)
-    flop, flop_ = latches.ms_d_flop(data, clock, gates.Not(clock))
+    flop, flop_ = latches.ms_d_flop(gates.Not(data), clock, gates.Not(clock))
     network.drain()
     assert not flop.read()
 
@@ -70,7 +70,7 @@ def test_ms_d_flop_timing():
     network = core.Network()
     clock = gates.Switch(network)
     data = gates.Switch(network)
-    flop, flop_ = latches.ms_d_flop(data, clock, gates.Not(clock))
+    flop, flop_ = latches.ms_d_flop(gates.Not(data), clock, gates.Not(clock))
     network.drain()
     assert not flop.read()
 
