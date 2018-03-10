@@ -1,4 +1,4 @@
-from gatesym.gates import And, Nor, Or, block
+from gatesym.gates import Nor, Or, block
 from gatesym.utils import invert
 
 
@@ -25,10 +25,10 @@ def address_decode(address, limit=None):
 
 
 @block
-def bit_switch(control_lines, *data):
+def bit_switch(control_lines_, *data_):
     """ select the bit(s) from the data that match the enabled control line(s) (generally only 1) """
-    assert len(control_lines) >= len(data)
-    return Or(*[And(c, d) for c, d in zip(control_lines, data)])
+    assert len(control_lines_) >= len(data_)
+    return Or(*[Nor(c_, d_) for c_, d_ in zip(control_lines_, data_)])
 
 
 @block
@@ -36,20 +36,25 @@ def bit_mux(address, *data):
     """ select a single bit from the block of bits based on the address """
     assert 2**len(address) >= len(data)
     control_lines = address_decode(address)
-    return bit_switch(control_lines, *data)
+    return bit_switch(invert(control_lines), *invert(data))
 
 
 @block
-def word_switch(control_lines, *data):
+def word_switch_(control_lines, *data_):
     """ select the words(s) from the data that match the enabled control line(s) (generally only 1) """
-    assert len(control_lines) >= len(data)
-    word_size = len(data[0])
-    assert all(len(d) == word_size for d in data)
+    assert len(control_lines) >= len(data_)
+    word_size = len(data_[0])
+    assert all(len(d) == word_size for d in data_)
 
     output = []
-    for data_lines in zip(*data):
-        output.append(bit_switch(control_lines, *data_lines))
+    control_lines_ = invert(control_lines)
+    for data_lines_ in zip(*data_):
+        output.append(bit_switch(control_lines_, *data_lines_))
     return output
+
+
+def word_switch(control_lines, *data):
+    return word_switch_(control_lines, *[invert(word) for word in data])
 
 
 @block
