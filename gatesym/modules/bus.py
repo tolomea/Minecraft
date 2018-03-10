@@ -1,5 +1,6 @@
 from gatesym.blocks.mux import address_matches, word_switch
 from gatesym.gates import And, block
+from gatesym.utils import invert
 
 
 @block
@@ -8,6 +9,7 @@ def bus(address, write, modules):
     the bus switches the write line between the modules and muxes the data lines coming back
     in both cases based on the address lines
     """
+    address_ = invert(address)
 
     # module prefixes are aligned to their sizes
     for prefix, size, data_in in modules:
@@ -25,7 +27,7 @@ def bus(address, write, modules):
     control_lines = []
     for prefix, size, data_in in modules:
         prefix //= 2**size
-        control_lines.append(address_matches(prefix, address[size:]))
+        control_lines.append(address_matches(prefix, address[size:], address_[size:]))
 
     # switch the data and write lines based on the control lines
     data_out = word_switch(control_lines, *[d for p, s, d in modules])

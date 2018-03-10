@@ -1,14 +1,15 @@
-from gatesym.gates import And, Nor, Not, Or, block
+from gatesym.gates import And, Nor, Or, block
+from gatesym.utils import invert
 
 
 @block
-def address_matches(address_value, address_lines):
+def address_matches(address_value, address_lines, address_lines_):
     """ does the address_value (an integer) match the current value of the address lines """
     assert 2**len(address_lines) > address_value
     matches = []
-    for i, line in enumerate(address_lines):
+    for i, (line, line_) in enumerate(zip(address_lines, address_lines_)):
         if address_value & 2**i:
-            matches.append(Not(line))
+            matches.append(line_)
         else:
             matches.append(line)
     return Nor(*matches)
@@ -19,7 +20,8 @@ def address_decode(address, limit=None):
     """ break an address out into individual enable lines """
     if limit is None:
         limit = 2**len(address)
-    return [address_matches(i, address) for i in range(limit)]
+    address_ = invert(address)
+    return [address_matches(i, address, address_) for i in range(limit)]
 
 
 @block

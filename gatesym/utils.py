@@ -1,6 +1,6 @@
 import collections
 
-from gatesym.gates import Or, Placeholder, Tie
+from gatesym.gates import Not, Or, Placeholder, Tie
 
 
 def pad(word, length, value=False):
@@ -43,3 +43,7 @@ def shuffle_right(word, amount):
     else:
         carry = Tie(network, False)
     return res[:len(word)], carry
+
+
+def invert(word):
+    return [Not(line) for line in word]

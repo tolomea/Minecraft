@@ -3,7 +3,7 @@ from gatesym.core import Network
 from gatesym.gates import And, Placeholder, Switch
 from gatesym.modules.cpu_core import cpu_core
 from gatesym.test_utils import BinaryIn, BinaryOut
-from gatesym.utils import PlaceholderWord
+from gatesym.utils import PlaceholderWord, invert
 
 
 def test_basic():
@@ -161,7 +161,7 @@ def test_jmp2():
         network.drain()
 
     addr, data_out, write = cpu_core(clock, data_in, pc_in, write_pc)
-    write_pc = write_pc.replace(And(write, mux.address_matches(102, addr)))
+    write_pc = write_pc.replace(And(write, mux.address_matches(102, addr, invert(addr))))
     pc_in = pc_in.replace(data_out)
 
     addr = BinaryOut(addr)
