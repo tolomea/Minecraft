@@ -1,17 +1,18 @@
-from gatesym.gates import Nand, Not, Placeholder, block
+from gatesym.gates import Nor, Not, Placeholder, block
 
 
 @block
 def gated_d_latch(data, clock):
     """ a basic latch that passes and latches the data while the clock is high """
-    s = Nand(data, clock)
-    r = Nand(s, clock)
-    q = Placeholder(data.network)
-    not_q = Nand(q, r)
-    q.replace(Nand(not_q, s))
+    clock_ = Not(clock)  # todo invert our relationship with the clock so we don't need all these
+    s_ = Nor(Not(data), clock_)
+    r_ = Nor(s_, clock_)
+    q_ = Placeholder(data.network)
+    q = Nor(q_, r_)
+    q_.replace(Nor(q, s_))
 
     # force it to init as 0
-    q.network.write(q.actual.index, False)
+    q.network.write(q.index, False)
     return q
 
 
