@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ex
-isort -c
+isort -y
 flake8
 pytest "$@"
 echo "TEST SUCCESS"
