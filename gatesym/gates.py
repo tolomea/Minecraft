@@ -32,8 +32,8 @@ class Node(object):
     def find(self, path, location=''):
         """ look up a related node by path """
         if location:
-            location = location + '.'
-        location = location + self.name
+            location = f'{location}.'
+        location = f'{location}{self.name}'
         parts = path.split('.', 1)
         head = parts[0]
         tail = parts[1] if len(parts) > 1 else ''
@@ -72,7 +72,7 @@ class Node(object):
 
         if possible_inputs:
             print([i.name for i in self.inputs])
-            return possible_inputs[0].full_name() + '.' + self.name
+            return f'{possible_inputs[0].full_name()}.{self.name}'
         else:
             print([i.name for i in self.inputs])
             return self.name
@@ -218,10 +218,10 @@ def link_factory(obj, name1, name2, block, is_output):
     """ wrap links around a bunch of nodes in an arbitrarily nested structure """
     if isinstance(obj, collections.Iterable):
         if name1 and not name1.endswith('('):
-            name1 = name1 + ','
-        return [link_factory(o, name1 + str(i), name2, block, is_output) for i, o in enumerate(obj)]
+            name1 = f'{name1},'
+        return [link_factory(o, f'{name1}{i}', name2, block, is_output) for i, o in enumerate(obj)]
     elif isinstance(obj, Node):
-        link = Link(obj, name1 + name2, block, is_output)
+        link = Link(obj, f'{name1}{name2}', block, is_output)
         if is_output:
             block.outputs.append(link)
         else:
@@ -262,7 +262,7 @@ def _block(func, *args):
 
     block = Block(func.__name__)
 
-    args = link_factory(args, func.__name__ + '(', '', block, False)
+    args = link_factory(args, f'{func.__name__}(', '', block, False)
     res = func(*args)
     res = link_factory(res, '', ')', block, True)
 
