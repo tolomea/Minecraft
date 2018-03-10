@@ -32,6 +32,10 @@ class BinaryIn(collections.Sequence):
     def __getitem__(self, key):
         return self.switches.__getitem__(key)
 
+    def watch(self, name):
+        for i, line in enumerate(self.switches):
+            line.watch(f'{name}_{i}')
+
 
 class BinaryOut(object):
     """ read a block of gates as a python int """
@@ -46,3 +50,7 @@ class BinaryOut(object):
                 res += idx
             idx *= 2
         return res
+
+    def watch(self, name):
+        for i, line in enumerate(self.gates):
+            line.watch(f'{name}_{i}')
