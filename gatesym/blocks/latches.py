@@ -20,13 +20,17 @@ def ms_d_flop(data, clock, clock_):
     """ a two stage latch that clocks data in on a positive edge and out on a negative edge """
     latch, latch_ = gated_d_latch(Not(data), clock_)
     res, res_ = gated_d_latch(latch_, clock)
-    return res
+    return res, res_
 
 
 @block
-def register(data, clock):
+def register(data, clock, negate=False):
     """ a bank of ms_d_flops that share a clock line """
     res = []
     for i in data:
-        res.append(ms_d_flop(i, clock, Not(clock)))
+        d, d_ = ms_d_flop(i, clock, Not(clock))
+        if negate:
+            res.append(d_)
+        else:
+            res.append(d)
     return res
