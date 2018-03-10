@@ -1,11 +1,11 @@
-from gatesym.gates import And, Not, Or, Tie, block
+from gatesym.gates import And, Nor, Not, Or, Tie, block
 
 
 @block
 def half_adder(a, b):
     """ add two bits, return a sum and a carry """
-    carry = And(a, b)
-    result = Or(And(a, Not(b)), And(Not(a), b))
+    carry = Nor(Not(a), Not(b))
+    result = Nor(Nor(a, b), carry)
     return result, carry
 
 

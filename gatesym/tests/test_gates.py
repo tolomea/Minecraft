@@ -9,7 +9,7 @@ def test_find():
     c = gates.Switch(n)
     r, co = adders.full_adder(a, b, c)
     assert a.find('full_adder(0.half_adder(0.nor.nor.1).nor.nor.1)') is co
-    assert a.find('full_adder(0.half_adder(0.nor:1.nor.nor.nor.0).half_adder(0.nor:2.nor.nor.nor.nor.0).0)') is r
+    assert a.find('full_adder(0.half_adder(0.nor.nor.nor.0).half_adder(0.nor.nor.nor.0).0)') is r
 
 
 def test_short_cut_find():
@@ -30,9 +30,9 @@ def test_list():
     r, co = adders.full_adder(a, b, c)
     assert a.list('') == ['full_adder(0']
     assert a.list('full_adder(0') == ['0)', '1)', 'half_adder(0']
-    assert a.list('full_adder(0.half_adder(0') == ['0)', '1)', 'nor', 'nor', 'nor']
+    assert a.list('full_adder(0.half_adder(0') == ['0)', '1)', 'nor', 'nor']
     assert a.list('full_adder(0.half_adder(0.nor') == ['nor']
-    assert a.list('full_adder(0.half_adder(0.nor.nor') == ['1)']
+    assert a.list('full_adder(0.half_adder(0.nor.nor') == ['nor', '1)']
     assert a.list('full_adder(0.half_adder(0.nor.nor.1)') == ['nor']
     assert a.list('full_adder(0.half_adder(0.nor.nor.1).nor') == ['nor']
     assert a.list('full_adder(0.half_adder(0.nor.nor.1).nor.nor') == ['1)']
