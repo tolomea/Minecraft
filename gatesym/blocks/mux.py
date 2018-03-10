@@ -1,4 +1,4 @@
-from gatesym.gates import And, Not, Or, block
+from gatesym.gates import And, Nor, Not, Or, block
 
 
 @block
@@ -8,10 +8,10 @@ def address_matches(address_value, address_lines):
     matches = []
     for i, line in enumerate(address_lines):
         if address_value & 2**i:
-            matches.append(line)
-        else:
             matches.append(Not(line))
-    return And(*matches)
+        else:
+            matches.append(line)
+    return Nor(*matches)
 
 
 @block
