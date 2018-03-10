@@ -20,15 +20,15 @@ class Helper(object):
         self.data_in.write(value)
         self.address.write(addr)
         self.write_flag.write(1)
+        self.network.drain()
         self.clock.write(1)
         self.network.drain()
+        self.write_flag.write(0)
         self.clock.write(0)
         self.network.drain()
-        self.write_flag.write(0)
 
     def read(self, addr):
         self.address.write(addr)
-        self.write_flag.write(0)
         self.network.drain()
         return self.data_out.read()
 

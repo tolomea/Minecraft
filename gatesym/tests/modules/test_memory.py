@@ -18,15 +18,15 @@ def test_memory():
         data_in.write(value)
         address.write(addr)
         write_flag.write(1)
+        network.drain()
         clock.write(1)
         network.drain()
+        write_flag.write(0)
         clock.write(0)
         network.drain()
-        write_flag.write(0)
 
     def read(addr):
         address.write(addr)
-        write_flag.write(0)
         network.drain()
         return data_out.read()
 
@@ -53,14 +53,14 @@ def test_1byte_memory():
     def write(value):
         data_in.write(value)
         write_flag.write(1)
+        network.drain()
         clock.write(1)
         network.drain()
+        write_flag.write(0)
         clock.write(0)
         network.drain()
-        write_flag.write(0)
 
     def read():
-        write_flag.write(0)
         network.drain()
         return data_out.read()
 
