@@ -2,7 +2,7 @@
 
 import collections
 
-TIE, SWITCH, AND, OR, NOR = ['tie', 'switch', 'and', 'or', 'nor']
+TIE, SWITCH, NOR = ['tie', 'switch', 'nor']
 
 
 class _Gate(collections.namedtuple('_Gate', 'type_, inputs, neg_inputs, outputs, cookies')):
@@ -22,10 +22,10 @@ class Network(object):
         self._log = []
 
     def add_gate(self, type_, cookie=None):
-        assert type_ in [TIE, SWITCH, AND, OR, NOR]
+        assert type_ in [TIE, SWITCH, NOR]
         index = len(self._gates)
         self._gates.append(_Gate(type_, {cookie}))
-        self._values.append(type_ in {AND, NOR})  # really? why and's?
+        self._values.append(type_ == NOR)
         return index
 
     def add_link(self, source_index, destination_index, negate=False):
@@ -54,11 +54,7 @@ class Network(object):
         for index in self._queue:
             gate = gates[index]
 
-            if gate.type_ == AND:
-                res = all(values[i] for i in gate.inputs) and not any(values[i] for i in gate.neg_inputs)
-            elif gate.type_ == OR:
-                res = any(values[i] for i in gate.inputs) or not all(values[i] for i in gate.neg_inputs)
-            elif gate.type_ == NOR:
+            if gate.type_ == NOR:
                 res = not(any(values[i] for i in gate.inputs) or not all(values[i] for i in gate.neg_inputs))
             else:
                 assert False, gate.type_
