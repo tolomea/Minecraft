@@ -10,8 +10,8 @@ def gated_d_latch(data, clock):
     not_q = nand(q, r)
     q.replace(nand(not_q, s))
 
-    # force it to init as 0, this hack is writing the and part of the q nand
-    q.network.write(q.actual.node.index, True)
+    # force it to init as 0
+    q.network.write(q.actual.index, False)
     return q
 
 

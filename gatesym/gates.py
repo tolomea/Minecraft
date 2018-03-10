@@ -174,20 +174,8 @@ class Link(Node):
             return self.outputs
 
 
-class Not(Link):
-
-    def __init__(self, node):
-        super().__init__(node, 'not', None, False)
-
-    def read(self):
-        return not self.node.read()
-
-    def connect_output(self, output, negate):
-        return self.node.connect_output(output, not negate)
-
-    def watch(self, name):
-        """ set a watch on this node """
-        self.network.watch(self.index, name, True)
+def Not(node):
+    return Nor(node)
 
 
 class Placeholder(Node):
