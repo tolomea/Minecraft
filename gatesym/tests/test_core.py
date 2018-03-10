@@ -242,58 +242,58 @@ def test_2_nor(input_type):
 def test_step():
     network = core.Network()
     idx_0 = network.add_gate(core.SWITCH)
-    idx_1 = network.add_gate(core.AND)
-    idx_2 = network.add_gate(core.AND)
+    idx_1 = network.add_gate(core.NOR)
+    idx_2 = network.add_gate(core.NOR)
     network.add_link(idx_0, idx_1)
     network.add_link(idx_1, idx_2)
 
     network.drain()
     assert network.read(idx_0) is False
-    assert network.read(idx_1) is False
+    assert network.read(idx_1) is True
     assert network.read(idx_2) is False
 
     network.write(idx_0, True)
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is False
+    assert network.read(idx_1) is True
     assert network.read(idx_2) is False
 
     assert network.step() is True
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is True
+    assert network.read(idx_1) is False
     assert network.read(idx_2) is False
 
     assert network.step() is False
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is True
+    assert network.read(idx_1) is False
     assert network.read(idx_2) is True
 
     assert network.step() is False
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is True
+    assert network.read(idx_1) is False
     assert network.read(idx_2) is True
 
 
 def test_drain():
     network = core.Network()
     idx_0 = network.add_gate(core.SWITCH)
-    idx_1 = network.add_gate(core.AND)
-    idx_2 = network.add_gate(core.AND)
+    idx_1 = network.add_gate(core.NOR)
+    idx_2 = network.add_gate(core.NOR)
     network.add_link(idx_0, idx_1)
     network.add_link(idx_1, idx_2)
 
     network.drain()
     assert network.read(idx_0) is False
-    assert network.read(idx_1) is False
+    assert network.read(idx_1) is True
     assert network.read(idx_2) is False
 
     network.write(idx_0, True)
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is False
+    assert network.read(idx_1) is True
     assert network.read(idx_2) is False
 
     assert network.drain() == 2
     assert network.read(idx_0) is True
-    assert network.read(idx_1) is True
+    assert network.read(idx_1) is False
     assert network.read(idx_2) is True
 
     network.write(idx_0, True)
