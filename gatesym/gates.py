@@ -21,7 +21,7 @@ class Node(object):
         self.outputs.append(output)
         output.inputs.append(self)
 
-    def connect_output(self, output, negate):
+    def connect_output(self, output):
         """ connect an output at the phycical level, output must be a gate """
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class Gate(Node):
         self.index = index
         for input_ in inputs:
             input_.attach_output(self)
-            input_.connect_output(self, False)
+            input_.connect_output(self)
 
     def __repr__(self):
         return f'{self.__class__.__name__}<{self.index}>({self.read()})'
@@ -95,8 +95,8 @@ class Gate(Node):
     def read(self):
         return self.network.read(self.index)
 
-    def connect_output(self, output, negate):
-        self.network.add_link(self.index, output.index, negate)
+    def connect_output(self, output):
+        self.network.add_link(self.index, output.index)
 
 
 class Tie(Gate):
@@ -163,8 +163,8 @@ class Link(Node):
     def read(self):
         return self.node.read()
 
-    def connect_output(self, output, negate):
-        return self.node.connect_output(output, negate)
+    def connect_output(self, output):
+        return self.node.connect_output(output)
 
     @property
     def index(self):
@@ -195,19 +195,19 @@ class Placeholder(Node):
         else:
             self.attached.append(output)
 
-    def connect_output(self, output, negate):
+    def connect_output(self, output):
         if self.actual:
-            self.actual.connect_output(output, negate)
+            self.actual.connect_output(output)
         else:
-            self.connected.append((output, negate))
+            self.connected.append(output)
 
     def replace(self, input):
         assert not self.actual
         self.actual = input
         for o in self.attached:
             input.attach_output(o)
-        for o, n in self.connected:
-            input.connect_output(o, n)
+        for o in self.connected:
+            input.connect_output(o)
 
     def __getattr__(self, name):
         assert self.actual

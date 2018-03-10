@@ -5,11 +5,11 @@ import collections
 TIE, SWITCH, NOR = ['tie', 'switch', 'nor']
 
 
-class _Gate(collections.namedtuple('_Gate', 'type_, inputs, neg_inputs, outputs, cookies')):
+class _Gate(collections.namedtuple('_Gate', 'type_, inputs, outputs, cookies')):
     # internal gate format
 
     def __new__(cls, type_, cookies):
-        return super().__new__(cls, type_, set(), set(), set(), cookies)
+        return super().__new__(cls, type_, set(), set(), cookies)
 
 
 class Network(object):
@@ -28,14 +28,11 @@ class Network(object):
         self._values.append(type_ == NOR)
         return index
 
-    def add_link(self, source_index, destination_index, negate=False):
+    def add_link(self, source_index, destination_index):
         dest_gate = self._gates[destination_index]
         assert dest_gate.type_ not in {TIE, SWITCH}
         self._gates[source_index].outputs.add(destination_index)
-        if negate:
-            dest_gate.neg_inputs.add(source_index)
-        else:
-            dest_gate.inputs.add(source_index)
+        dest_gate.inputs.add(source_index)
         self._queue.add(destination_index)
 
     def read(self, gate_index):
@@ -55,7 +52,7 @@ class Network(object):
             gate = gates[index]
 
             if gate.type_ == NOR:
-                res = not(any(values[i] for i in gate.inputs) or not all(values[i] for i in gate.neg_inputs))
+                res = not(any(values[i] for i in gate.inputs))
             else:
                 assert False, gate.type_
 
@@ -107,7 +104,7 @@ class Network(object):
         for gate in self._gates:
             if gate:
                 gates_by_type[gate.type_] += 1
-                gates_by_type_and_inputs[gate.type_, len(gate.inputs) + len(gate.neg_inputs)] += 1
+                gates_by_type_and_inputs[gate.type_, len(gate.inputs)] += 1
 
         return {
             'size': self.get_size(),
