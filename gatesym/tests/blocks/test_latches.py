@@ -8,28 +8,32 @@ def test_gated_d_latch():
     network = core.Network()
     clock = gates.Switch(network)
     data = gates.Switch(network)
-    latch = latches.gated_d_latch(data, clock)
+    latch, latch_ = latches.gated_d_latch(gates.Not(data), gates.Not(clock))
     network.drain()
     assert not latch.read()
+    assert latch_.read()
 
     data.write(True)
     network.drain()
     assert not latch.read()
+    assert latch_.read()
 
     clock.write(True)
     network.drain()
     assert latch.read()
+    assert not latch_.read()
 
     data.write(False)
     network.drain()
     assert not latch.read()
+    assert latch_.read()
 
 
 def test_ms_d_flop_basic():
     network = core.Network()
     clock = gates.Switch(network)
     data = gates.Switch(network)
-    flop = latches.ms_d_flop(data, clock)
+    flop = latches.ms_d_flop(data, clock, gates.Not(clock))
     network.drain()
     assert not flop.read()
 
@@ -60,7 +64,7 @@ def test_ms_d_flop_timing():
     network = core.Network()
     clock = gates.Switch(network)
     data = gates.Switch(network)
-    flop = latches.ms_d_flop(data, clock)
+    flop = latches.ms_d_flop(data, clock, gates.Not(clock))
     network.drain()
     assert not flop.read()
 
