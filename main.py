@@ -21,8 +21,6 @@ SECTOR_SIZE = 16
 
 FLYING_SPEED = 15
 
-PLAYER_HEIGHT = 2
-
 if sys.version_info[0] >= 3:
     xrange = range
 
@@ -478,9 +476,6 @@ class Window(pyglet.window.Window):
         # The crosshairs at the center of the screen.
         self.reticle = None
 
-        # Velocity in the y (upward) direction.
-        self.dy = 0
-
         # A list of blocks the player can place. Hit num keys to cycle.
         self.inventory = [BRICK, GRASS, SAND]
 
@@ -614,19 +609,18 @@ class Window(pyglet.window.Window):
         dx, dy, dz = dx * d, dy * d, dz * d
         # collisions
         x, y, z = self.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
+        x, y, z = self.collide((x + dx, y + dy, z + dz))
         self.position = (x, y, z)
 
-    def collide(self, position, height):
-        """ Checks to see if the player at the given `position` and `height`
+    def collide(self, position):
+        """ Checks to see if the player at the given `position`
         is colliding with any blocks in the world.
 
         Parameters
         ----------
         position : tuple of len 3
             The (x, y, z) position to check for collisions at.
-        height : int or float
-            The height of the player.
+
 
         Returns
         -------
@@ -635,32 +629,24 @@ class Window(pyglet.window.Window):
 
         """
         # How much overlap with a dimension of a surrounding block you need to
-        # have to count as a collision. If 0, touching terrain at all counts as
-        # a collision. If .49, you sink into the ground, as if walking through
-        # tall grass. If >= .5, you'll fall through the ground.
-        pad = 0.25
+        # have to count as a collision. You can think of the player as having a
+        # radius of 0.5 - pad.
+        pad = .1
         p = list(position)
         np = normalize(position)
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
-                if not face[i]:
-                    continue
                 # How much overlap you have with this dimension.
                 d = (p[i] - np[i]) * face[i]
                 if d < pad:
                     continue
-                for dy in xrange(height):  # check each height
-                    op = list(np)
-                    op[1] -= dy
-                    op[i] += face[i]
-                    if tuple(op) not in self.model.world:
-                        continue
-                    p[i] -= (d - pad) * face[i]
-                    if face == (0, -1, 0) or face == (0, 1, 0):
-                        # You are colliding with the ground or ceiling, so stop
-                        # falling / rising.
-                        self.dy = 0
-                    break
+
+                op = list(np)
+                op[i] += face[i]
+                if tuple(op) not in self.model.world:
+                    continue
+                p[i] -= (d - pad) * face[i]
+
         return tuple(p)
 
     def face_between_blocks(self, src, dest):
