@@ -162,7 +162,7 @@ class Model(object):
         """ Initialize the world by placing all the blocks.
 
         """
-        n = 80  # 1/2 width and height of world
+        n = 20  # 1/2 width and height of world
         s = 1  # step size
         y = 0  # initial y height
         for x in xrange(-n, n + 1, s):
@@ -177,7 +177,7 @@ class Model(object):
 
         # generate the hills randomly
         o = n - 10
-        for _ in xrange(120):
+        for _ in xrange(20):
             a = random.randint(-o, o)  # x position of the hill
             b = random.randint(-o, o)  # z position of the hill
             c = -1  # base of the hill
