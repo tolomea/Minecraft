@@ -91,6 +91,18 @@ FACE_NAMES = [
 ]
 
 
+def add(va, vb):
+    return [a + b for a, b in zip(va, vb)]
+
+
+def mul(va, s):
+    return [a * s for a in va]
+
+
+def sub(va, vb):
+    return [a - b for a, b in zip(va, vb)]
+
+
 def normalize(position):
     """ Accepts `position` of arbitrary precision and returns the block
     containing that position.
@@ -632,22 +644,24 @@ class Window(pyglet.window.Window):
         # have to count as a collision. You can think of the player as having a
         # radius of 0.5 - pad.
         pad = .1
-        p = list(position)
-        np = normalize(position)
+        pos = list(position)
+        pos_norm = normalize(position)
         for face in FACES:  # check all surrounding blocks
+            neighbour = add(pos_norm, face)
+            if tuple(neighbour) not in self.model.world:
+                continue
+
+            res = [0, 0, 0]
             for i in xrange(3):  # check each dimension independently
                 # How much overlap you have with this dimension.
-                d = (p[i] - np[i]) * face[i]
+                d = (pos[i] - pos_norm[i]) * face[i]
                 if d < pad:
                     continue
 
-                op = list(np)
-                op[i] += face[i]
-                if tuple(op) not in self.model.world:
-                    continue
-                p[i] -= (d - pad) * face[i]
+                res = sub(res, mul(face, d - pad))
+            pos = add(pos, res)
 
-        return tuple(p)
+        return tuple(pos)
 
     def face_between_blocks(self, src, dest):
         vector = tuple(a - b for a, b in zip(src, dest))
