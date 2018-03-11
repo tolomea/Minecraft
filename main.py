@@ -663,9 +663,6 @@ class Window(pyglet.window.Window):
                     break
         return tuple(p)
 
-    def on_mouse_release(self, x, y, button, modifiers):
-        self.set_exclusive_mouse(True)
-
     def face_between_blocks(self, src, dest):
         vector = tuple(a - b for a, b in zip(src, dest))
         return FACES.index(vector)
@@ -703,6 +700,9 @@ class Window(pyglet.window.Window):
         else:
             self.set_exclusive_mouse(True)
 
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.on_mouse_motion(x, y, dx, dy)
+
     def on_mouse_motion(self, x, y, dx, dy):
         """ Called when the player moves the mouse.
 
@@ -734,7 +734,6 @@ class Window(pyglet.window.Window):
             Number representing any modifying keys that were pressed.
 
         """
-        self.set_exclusive_mouse(True)
         if symbol == key.W:
             self.strafe[0] -= 1
         elif symbol == key.S:
