@@ -19,20 +19,7 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-WALKING_SPEED = 5
 FLYING_SPEED = 15
-
-GRAVITY = 20.0
-MAX_JUMP_HEIGHT = 1.0  # About the height of a block.
-# To derive the formula for calculating jump speed, first solve
-#    v_t = v_0 + a * t
-# for the time at which you achieve maximum height, where a is the acceleration
-# due to gravity and v_t = 0. This gives:
-#    t = - v_0 / a
-# Use t and the desired MAX_JUMP_HEIGHT to solve for v_0 (jump speed) in
-#    s = s_0 + v_0 * t + (a * t^2) / 2
-JUMP_SPEED = math.sqrt(2 * GRAVITY * MAX_JUMP_HEIGHT)
-TERMINAL_VELOCITY = 50
 
 PLAYER_HEIGHT = 2
 
@@ -464,9 +451,6 @@ class Window(pyglet.window.Window):
         # Whether or not the window exclusively captures the mouse.
         self.exclusive = False
 
-        # When flying gravity has no effect and speed is increased.
-        self.flying = False
-
         # Strafing is moving lateral to the direction you are facing,
         # e.g. moving to the left or right while continuing to face forward.
         #
@@ -567,31 +551,26 @@ class Window(pyglet.window.Window):
             strafe = math.degrees(math.atan2(self.strafe[0], self.strafe[2]))
             y_angle = math.radians(y)
             x_angle = math.radians(x + strafe)
-            if self.flying:
-                m = math.cos(y_angle)
-                dy = math.sin(y_angle)
-                if self.strafe[2]:
-                    # Moving left or right.
-                    dy = 0.0
-                    m = 1
-                if self.strafe[0] > 0:
-                    # Moving backwards.
-                    dy *= -1
-                # When you are flying up or down, you have less left and right
-                # motion.
-                dx = math.cos(x_angle) * m
-                dz = math.sin(x_angle) * m
-            else:
+
+            m = math.cos(y_angle)
+            dy = math.sin(y_angle)
+            if self.strafe[2]:
+                # Moving left or right.
                 dy = 0.0
-                dx = math.cos(x_angle)
-                dz = math.sin(x_angle)
+                m = 1
+            if self.strafe[0] > 0:
+                # Moving backwards.
+                dy *= -1
+            # When you are flying up or down, you have less left and right
+            # motion.
+            dx = math.cos(x_angle) * m
+            dz = math.sin(x_angle) * m
         else:
             dy = 0.0
             dx = 0.0
             dz = 0.0
 
-        if self.flying:
-            dy += self.strafe[1]
+        dy += self.strafe[1]
 
         return (dx, dy, dz)
 
@@ -628,19 +607,11 @@ class Window(pyglet.window.Window):
 
         """
         # walking
-        speed = FLYING_SPEED if self.flying else WALKING_SPEED
+        speed = FLYING_SPEED
         d = dt * speed  # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
         dx, dy, dz = dx * d, dy * d, dz * d
-        # gravity
-        if not self.flying:
-            # Update your vertical speed: if you are falling, speed up until you
-            # hit terminal velocity; if you are jumping, slow down until you
-            # start falling.
-            self.dy -= dt * GRAVITY
-            self.dy = max(self.dy, -TERMINAL_VELOCITY)
-            dy += self.dy * dt
         # collisions
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
@@ -774,14 +745,10 @@ class Window(pyglet.window.Window):
             self.strafe[2] += 1
         elif symbol == key.SPACE:
             self.strafe[1] += 1
-            if not self.flying and self.dy == 0:
-                self.dy = JUMP_SPEED
         elif symbol == key.LSHIFT:
             self.strafe[1] -= 1
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
-        elif symbol == key.TAB:
-            self.flying = not self.flying
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
