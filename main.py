@@ -19,7 +19,7 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-FLYING_SPEED = 15
+FLYING_SPEED = 10
 
 if sys.version_info[0] >= 3:
     xrange = range
@@ -598,14 +598,13 @@ class Window(pyglet.window.Window):
             if self.sector is None:
                 self.model.process_entire_queue()
             self.sector = sector
-        m = 8
-        dt = min(dt, 0.2)
+        m = max(int(dt / 0.025), 1)
         for _ in xrange(m):
             self._update(dt / m)
 
     def _update(self, dt):
         """ Private implementation of the `update()` method. This is where most
-        of the motion logic lives, along with gravity and collision detection.
+        of the motion logic lives, along with collision detection.
 
         Parameters
         ----------
@@ -616,13 +615,9 @@ class Window(pyglet.window.Window):
         # walking
         speed = FLYING_SPEED
         d = dt * speed  # distance covered this tick.
-        dx, dy, dz = self.get_motion_vector()
-        # New position in space, before accounting for gravity.
-        dx, dy, dz = dx * d, dy * d, dz * d
+        motion_vec = mul(self.get_motion_vector(), d)
         # collisions
-        x, y, z = self.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz))
-        self.position = (x, y, z)
+        self.position = self.collide(add(self.position, motion_vec))
 
     def collide(self, position):
         """ Checks to see if the player at the given `position`
