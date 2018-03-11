@@ -690,7 +690,7 @@ class Window(pyglet.window.Window):
             if (button == mouse.RIGHT) or \
                     ((button == mouse.LEFT) and (modifiers & key.MOD_CTRL)):
                 # ON OSX, control + left click = right click.
-                if previous:
+                if previous and normalize(self.position) != previous:  # todo this doesn't account for pad correctly
                     orientation = self.face_between_blocks(block, previous)
                     self.model.add_block(previous, self.block, orientation)
             elif button == pyglet.window.mouse.LEFT and block in self.model.world:
