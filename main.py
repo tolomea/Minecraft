@@ -228,14 +228,17 @@ class Model(object):
         m = 8
         x, y, z = position
         dx, dy, dz = vector
+        key = None
         previous = None
         for _ in xrange(max_distance * m):
-            key = normalize((x, y, z))
-            if key != previous and key in self.world:
-                return key, previous
-            previous = key
+            new = normalize((x, y, z))
+            if new != key:
+                previous = key
+                key = new
+                if key in self.world:
+                    break
             x, y, z = x + dx / m, y + dy / m, z + dz / m
-        return None, None
+        return key, previous
 
     def exposed(self, position):
         """ Returns False is given `position` is surrounded on all 6 sides by
@@ -722,7 +725,7 @@ class Window(pyglet.window.Window):
                 if previous:
                     orientation = self.face_between_blocks(block, previous)
                     self.model.add_block(previous, self.block, orientation)
-            elif button == pyglet.window.mouse.LEFT and block:
+            elif button == pyglet.window.mouse.LEFT and block in self.model.world:
                 texture = self.model.world[block]
                 if texture != STONE:
                     self.model.remove_block(block)
