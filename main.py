@@ -25,13 +25,17 @@ def cube_vertices(x, y, z, n):
     """ Return the vertices of the cube at position x, y, z with size 2*n.
 
     """
+    return box_vertices(x - n, y - n, z - n, x + n, y + n, z + n)
+
+
+def box_vertices(x1, y1, z1, x2, y2, z2):
     return [
-        x - n, y + n, z - n, x - n, y + n, z + n, x + n, y + n, z + n, x + n, y + n, z - n,  # top
-        x - n, y - n, z - n, x + n, y - n, z - n, x + n, y - n, z + n, x - n, y - n, z + n,  # bottom
-        x + n, y - n, z + n, x + n, y - n, z - n, x + n, y + n, z - n, x + n, y + n, z + n,  # right
-        x - n, y - n, z - n, x - n, y - n, z + n, x - n, y + n, z + n, x - n, y + n, z - n,  # left
-        x - n, y - n, z + n, x + n, y - n, z + n, x + n, y + n, z + n, x - n, y + n, z + n,  # front
-        x + n, y - n, z - n, x - n, y - n, z - n, x - n, y + n, z - n, x + n, y + n, z - n,  # back
+        x1, y2, z1, x1, y2, z2, x2, y2, z2, x2, y2, z1,  # top
+        x1, y1, z1, x2, y1, z1, x2, y1, z2, x1, y1, z2,  # bottom
+        x2, y1, z2, x2, y1, z1, x2, y2, z1, x2, y2, z2,  # right
+        x1, y1, z1, x1, y1, z2, x1, y2, z2, x1, y2, z1,  # left
+        x1, y1, z2, x2, y1, z2, x2, y2, z2, x1, y2, z2,  # front
+        x2, y1, z1, x1, y1, z1, x1, y2, z1, x2, y2, z1,  # back
     ]
 
 
