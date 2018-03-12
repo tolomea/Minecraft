@@ -2,7 +2,6 @@ from __future__ import division
 
 import math
 import random
-import sys
 import time
 from collections import deque
 
@@ -20,9 +19,6 @@ TICKS_PER_SEC = 60
 SECTOR_SIZE = 16
 
 FLYING_SPEED = 10
-
-if sys.version_info[0] >= 3:
-    xrange = range
 
 
 def cube_vertices(x, y, z, n):
@@ -177,19 +173,19 @@ class Model(object):
         n = 20  # 1/2 width and height of world
         s = 1  # step size
         y = 0  # initial y height
-        for x in xrange(-n, n + 1, s):
-            for z in xrange(-n, n + 1, s):
+        for x in range(-n, n + 1, s):
+            for z in range(-n, n + 1, s):
                 # create a layer stone an grass everywhere.
                 self.add_block((x, y - 2, z), GRASS, immediate=False)
                 self.add_block((x, y - 3, z), STONE, immediate=False)
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
-                    for dy in xrange(-2, 3):
+                    for dy in range(-2, 3):
                         self.add_block((x, y + dy, z), STONE, immediate=False)
 
         # generate the hills randomly
         o = n - 10
-        for _ in xrange(20):
+        for _ in range(20):
             a = random.randint(-o, o)  # x position of the hill
             b = random.randint(-o, o)  # z position of the hill
             c = -1  # base of the hill
@@ -197,9 +193,9 @@ class Model(object):
             s = random.randint(4, 8)  # 2 * s is the side length of the hill
             d = 1  # how quickly to taper off the hills
             t = random.choice([GRASS, SAND, BRICK])
-            for y in xrange(c, c + h):
-                for x in xrange(a - s, a + s + 1):
-                    for z in xrange(b - s, b + s + 1):
+            for y in range(c, c + h):
+                for x in range(a - s, a + s + 1):
+                    for z in range(b - s, b + s + 1):
                         if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
@@ -227,7 +223,7 @@ class Model(object):
         dx, dy, dz = vector
         key = None
         previous = None
-        for _ in xrange(max_distance * m):
+        for _ in range(max_distance * m):
             new = normalize((x, y, z))
             if new != key:
                 previous = key
@@ -403,9 +399,9 @@ class Model(object):
         before_set = set()
         after_set = set()
         pad = 4
-        for dx in xrange(-pad, pad + 1):
-            for dy in [0]:  # xrange(-pad, pad + 1):
-                for dz in xrange(-pad, pad + 1):
+        for dx in range(-pad, pad + 1):
+            for dy in [0]:  # range(-pad, pad + 1):
+                for dz in range(-pad, pad + 1):
                     if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
                         continue
                     if before:
@@ -599,7 +595,7 @@ class Window(pyglet.window.Window):
                 self.model.process_entire_queue()
             self.sector = sector
         m = max(int(dt / 0.025), 1)
-        for _ in xrange(m):
+        for _ in range(m):
             self._update(dt / m)
 
     def _update(self, dt):
@@ -647,7 +643,7 @@ class Window(pyglet.window.Window):
                 continue
 
             res = [0, 0, 0]
-            for i in xrange(3):  # check each dimension independently
+            for i in range(3):  # check each dimension independently
                 # How much overlap you have with this dimension.
                 d = (pos[i] - pos_norm[i]) * face[i]
                 if d < pad:
