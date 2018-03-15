@@ -286,12 +286,13 @@ class Model(object):
         """
         texture = self.world[position]
         self.shown[position] = texture
+        orientation = self.orientation[position]
         if immediate:
-            self._show_block(position, texture)
+            self._show_block(position, texture, orientation)
         else:
-            self._enqueue(self._show_block, position, texture)
+            self._enqueue(self._show_block, position, texture, orientation)
 
-    def _show_block(self, position, texture):
+    def _show_block(self, position, texture, orientation):
         """ Private implementation of the `show_block()` method.
 
         Parameters
@@ -303,13 +304,19 @@ class Model(object):
             generate.
 
         """
-        x, y, z = position
-        vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = list(texture)
+        if texture == WIRE:
+            extension = add(position, mul(FACES[orientation], 0.5))
+            vertex_data = cube_vertices(*position, 0.25) + cube_vertices(*extension, 0.25)
+            texture_data = list(texture * 2)
+        else:
+            vertex_data = cube_vertices(*position, 0.5)
+            texture_data = list(texture)
+
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
+        assert len(vertex_data) == len(texture_data) / 2 * 3
         self._shown[position] = self.batch.add(
-            24, gl.QUADS, self.group,
+            len(vertex_data) // 3, gl.QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data),
         )
