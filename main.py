@@ -449,6 +449,7 @@ class Window(pyglet.window.Window):
         # The vertical plane rotation ranges from -90 (looking straight down) to
         # 90 (looking straight up). The horizontal rotation range is unbounded.
         self.rotation = (0, 0)
+        self.rotation_new = (0, 0)
 
         # Which sector the player is currently in.
         self.sector = None
@@ -580,7 +581,7 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
-        # walking
+        self.rotation = self.rotation_new
         speed = FLYING_SPEED
         d = dt * speed  # distance covered this tick.
         motion_vec = mul(self.get_motion_vector(), d)
@@ -680,10 +681,10 @@ class Window(pyglet.window.Window):
         """
         if self.exclusive:
             m = 0.15
-            x, y = self.rotation
+            x, y = self.rotation_new
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
-            self.rotation = (x, y)
+            self.rotation_new = (x, y)
 
     def on_key_press(self, symbol, modifiers):
         """ Called when the player presses a key. See pyglet docs for key
