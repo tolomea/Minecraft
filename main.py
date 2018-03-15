@@ -48,26 +48,20 @@ def tex_coord(x, y, n=4):
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
-def tex_coords(top, bottom, side):
+def tex_coords(coord):
     """ Return a list of the texture squares for the top, bottom and side.
 
     """
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    side = tex_coord(*side)
-    result = []
-    result.extend(top)
-    result.extend(bottom)
-    result.extend(side * 4)
-    return result
+    face = tex_coord(*coord)
+    return face * 6
 
 
 TEXTURE_PATH = 'texture.png'
 
-GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-SAND = tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = tex_coords((2, 0), (2, 0), (2, 0))
-STONE = tex_coords((2, 1), (2, 1), (2, 1))
+# GRASS = tex_coords((1, 0), (0, 1), (0, 0))
+CLOCK = tex_coords((1, 1))
+WIRE = tex_coords((2, 0))
+GATE = tex_coords((2, 1))
 
 FACES = [
     (0, 1, 0),
@@ -173,7 +167,7 @@ class Model(object):
         """ Initialize the world by placing all the blocks.
 
         """
-        pass
+        self.add_block((0, 0, -5), CLOCK)
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -458,7 +452,7 @@ class Window(pyglet.window.Window):
         self.reticle = None
 
         # A list of blocks the player can place. Hit num keys to cycle.
-        self.inventory = [BRICK, GRASS, SAND]
+        self.inventory = [WIRE, GATE]
 
         # The current block the user can place. Hit num keys to cycle.
         self.block = self.inventory[0]
@@ -659,7 +653,7 @@ class Window(pyglet.window.Window):
                     self.model.add_block(previous, self.block, orientation)
             elif button == pyglet.window.mouse.LEFT and block in self.model.world:
                 texture = self.model.world[block]
-                if texture != STONE:
+                if texture != CLOCK:
                     self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
