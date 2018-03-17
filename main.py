@@ -17,9 +17,6 @@ from gatesym import core
 
 TICKS_PER_SEC = 60
 
-# Size of sectors used to ease block loading.
-SECTOR_SIZE = 16
-
 FLYING_SPEED = 10
 
 
@@ -124,23 +121,6 @@ def normalize(position):
     return (x, y, z)
 
 
-def sectorize(position):
-    """ Returns a tuple representing the sector for the given `position`.
-
-    Parameters
-    ----------
-    position : tuple of len 3
-
-    Returns
-    -------
-    sector : tuple of len 3
-
-    """
-    x, y, z = normalize(position)
-    x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE
-    return (x, 0, z)
-
-
 class Model(object):
 
     def __init__(self):
@@ -166,9 +146,6 @@ class Model(object):
 
         # Mapping from position to a pyglet `VertextList` for all shown blocks.
         self._shown = {}
-
-        # Mapping from sector to a list of positions inside that sector.
-        self.sectors = {}
 
         self.network = core.Network()
 
@@ -241,7 +218,6 @@ class Model(object):
             self.remove_block(position, immediate)
         self.world[position] = block
         self.orientation[position] = orientation
-        self.sectors.setdefault(sectorize(position), []).append(position)
         if block == GATE:
             self.line[position] = self.network.add_gate(core.NOR)
         elif block == CLOCK:
@@ -270,7 +246,6 @@ class Model(object):
         del self.world[position]
         del self.orientation[position]
         del self.line[position]
-        self.sectors[sectorize(position)].remove(position)
         if immediate:
             if position in self.shown:
                 self.hide_block(position)
@@ -363,51 +338,6 @@ class Model(object):
         """
         self._shown.pop(position).delete()
 
-    def show_sector(self, sector):
-        """ Ensure all blocks in the given sector that should be shown are
-        drawn to the canvas.
-
-        """
-        for position in self.sectors.get(sector, []):
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position, False)
-
-    def hide_sector(self, sector):
-        """ Ensure all blocks in the given sector that should be hidden are
-        removed from the canvas.
-
-        """
-        for position in self.sectors.get(sector, []):
-            if position in self.shown:
-                self.hide_block(position, False)
-
-    def change_sectors(self, before, after):
-        """ Move from sector `before` to sector `after`. A sector is a
-        contiguous x, y sub-region of world. Sectors are used to speed up
-        world rendering.
-
-        """
-        before_set = set()
-        after_set = set()
-        pad = 4
-        for dx in range(-pad, pad + 1):
-            for dy in [0]:  # range(-pad, pad + 1):
-                for dz in range(-pad, pad + 1):
-                    if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
-                        continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
-            self.show_sector(sector)
-        for sector in hide:
-            self.hide_sector(sector)
-
 
 class Window(pyglet.window.Window):
 
@@ -438,9 +368,6 @@ class Window(pyglet.window.Window):
         # 90 (looking straight up). The horizontal rotation range is unbounded.
         self.rotation = (0, 0)
         self.rotation_new = (0, 0)
-
-        # Which sector the player is currently in.
-        self.sector = None
 
         # The crosshairs at the center of the screen.
         self.reticle = None
@@ -558,10 +485,6 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
-        sector = sectorize(self.position)
-        if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
-            self.sector = sector
         m = max(int(dt / 0.025), 1)
         for _ in range(m):
             self._update(dt / m)
