@@ -489,6 +489,16 @@ class Window(pyglet.window.Window):
             anchor_y='top',
             color=(0, 0, 0, 255),
         )
+        self.label2 = pyglet.text.Label(
+            '',
+            font_name='Arial',
+            font_size=18,
+            x=10,
+            y=self.height - 30,
+            anchor_x='left',
+            anchor_y='top',
+            color=(0, 0, 0, 255),
+        )
 
         # This call schedules the `update()` method to be called
         # TICKS_PER_SEC. This is the main game event loop.
@@ -754,6 +764,7 @@ class Window(pyglet.window.Window):
         """
         # label
         self.label.y = height - 10
+        self.label2.y = height - 30
         # reticle
         if self.reticle:
             self.reticle.delete()
@@ -803,27 +814,29 @@ class Window(pyglet.window.Window):
         self.set_3d()
         gl.color3d(1, 1, 1)
         self.model.batch.draw()
-        self.draw_focused_block()
+        selected = self.get_focused_block()
+        self.draw_focused_block(selected)
         self.set_2d()
-        self.draw_label()
+        self.draw_label(selected)
         self.draw_reticle()
 
-    def draw_focused_block(self):
+    def get_focused_block(self):
+        vector = self.get_sight_vector()
+        return self.model.hit_test(self.position, vector)[0]
+
+    def draw_focused_block(self, selected):
         """ Draw black edges around the block that is currently under the
         crosshairs.
 
         """
-        vector = self.get_sight_vector()
-        block = self.model.hit_test(self.position, vector)[0]
-        if block:
-            x, y, z = block
-            vertex_data = cube_vertices(x, y, z, 0.51)
+        if selected:
+            vertex_data = cube_vertices(*selected, 0.51)
             gl.color3d(0, 0, 0)
             gl.polygon_mode(gl.FRONT_AND_BACK, gl.LINE)
             pyglet.graphics.draw(24, gl.QUADS, ('v3f/static', vertex_data))
             gl.polygon_mode(gl.FRONT_AND_BACK, gl.FILL)
 
-    def draw_label(self):
+    def draw_label(self, selected):
         """ Draw the label in the top left of the screen.
 
         """
@@ -832,6 +845,13 @@ class Window(pyglet.window.Window):
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
+
+        m = self.model
+        if selected in m.world:
+            self.label2.text = f'{selected}, {m.world[selected]}, {FACE_NAMES[m.orientation[selected]]}'
+        else:
+            self.label2.text = 'None'
+        self.label2.draw()
 
     def draw_reticle(self):
         """ Draw the crosshairs in the center of the screen.
