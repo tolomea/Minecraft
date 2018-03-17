@@ -12,6 +12,9 @@ from pyglet import image
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
+from gatesym import core
+
+
 TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
@@ -76,6 +79,8 @@ FACES = [
     (0, 0, 1),
     (0, 0, -1),
 ]
+
+UNCONNECTED = -1
 
 UP, DOWN, LEFT, RIGHT, FRONT, BACK = range(6)
 
@@ -156,6 +161,9 @@ class Model(object):
         # Same mapping as `world` but contains block orientations
         self.orientation = {}
 
+        # Same mapping as `world` but contains core network ids
+        self.line = {}
+
         # Mapping from position to a pyglet `VertextList` for all shown blocks.
         self._shown = {}
 
@@ -166,13 +174,17 @@ class Model(object):
         # _show_block() and _hide_block() calls
         self.queue = deque()
 
+        self.network = core.Network()
+
         self._initialize()
 
     def _initialize(self):
         """ Initialize the world by placing all the blocks.
 
         """
-        self.add_block((0, 0, -5), CLOCK)
+        position = (0, 0, -5)
+        self.add_block(position, CLOCK)
+        self.clock_index = self.line[position]
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -234,6 +246,15 @@ class Model(object):
         self.world[position] = block
         self.orientation[position] = orientation
         self.sectors.setdefault(sectorize(position), []).append(position)
+        if block == GATE:
+            self.line[position] = self.network.add_gate(core.NOR)
+        elif block == CLOCK:
+            self.line[position] = self.network.add_gate(core.SWITCH)
+        elif block == WIRE:
+            source = tuple(add(position, FACES[orientation]))
+            self.line[position] = self.line[source] if source in self.world else UNCONNECTED
+        else:
+            assert False
         if immediate:
             if self.exposed(position):
                 self.show_block(position)
@@ -252,6 +273,7 @@ class Model(object):
         """
         del self.world[position]
         del self.orientation[position]
+        del self.line[position]
         self.sectors[sectorize(position)].remove(position)
         if immediate:
             if position in self.shown:
