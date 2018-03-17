@@ -186,7 +186,7 @@ class Model(object):
             x, y, z = x + dx / m, y + dy / m, z + dz / m
         return key, previous
 
-    def add_block(self, position, block, orientation=DOWN, immediate=True):  # GDW remove default orientation
+    def add_block(self, position, block, orientation=DOWN):  # GDW remove default orientation
         """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
@@ -196,12 +196,10 @@ class Model(object):
         texture : list of len 3
             The coordinates of the texture squares. Use `tex_coords()` to
             generate.
-        immediate : bool
-            Whether or not to draw the block immediately.
 
         """
         if position in self.world:
-            self.remove_block(position, immediate)
+            self.remove_block(position)
         self.world[position] = block
         self.orientation[position] = orientation
         if block == GATE:
@@ -213,27 +211,23 @@ class Model(object):
             self.line[position] = self.line[source] if source in self.world else UNCONNECTED
         else:
             assert False
-        if immediate:
-            self.show_block(position)
+        self.show_block(position)
 
-    def remove_block(self, position, immediate=True):
+    def remove_block(self, position):
         """ Remove the block at the given `position`.
 
         Parameters
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to remove.
-        immediate : bool
-            Whether or not to immediately remove block from canvas.
 
         """
         del self.world[position]
         del self.orientation[position]
         del self.line[position]
-        if immediate:
-            self.hide_block(position)
+        self.hide_block(position)
 
-    def show_block(self, position, immediate=True):
+    def show_block(self, position):
         """ Show the block at the given `position`. This method assumes the
         block has already been added with add_block()
 
@@ -241,27 +235,12 @@ class Model(object):
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to show.
-        immediate : bool
-            Whether or not to show the block immediately.
 
         """
         type_ = self.world[position]
         texture = TEXTURES[type_]
         orientation = self.orientation[position]
-        self._show_block(position, type_, texture, orientation)
 
-    def _show_block(self, position, type_, texture, orientation):
-        """ Private implementation of the `show_block()` method.
-
-        Parameters
-        ----------
-        position : tuple of len 3
-            The (x, y, z) position of the block to show.
-        texture : list of len 3
-            The coordinates of the texture squares. Use `tex_coords()` to
-            generate.
-
-        """
         if type_ == WIRE:
             extension = add(position, mul(FACES[orientation], 0.5))
             vertex_data = cube_vertices(*position, 0.25) + cube_vertices(*extension, 0.25)
@@ -279,7 +258,7 @@ class Model(object):
             ('t2f/static', texture_data),
         )
 
-    def hide_block(self, position, immediate=True):
+    def hide_block(self, position):
         """ Hide the block at the given `position`. Hiding does not remove the
         block from the world.
 
@@ -287,15 +266,6 @@ class Model(object):
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to hide.
-        immediate : bool
-            Whether or not to immediately remove the block from the canvas.
-
-        """
-        self._hide_block(position)
-
-    def _hide_block(self, position):
-        """ Private implementation of the 'hide_block()` method.
-
         """
         self._shown.pop(position).delete()
 
