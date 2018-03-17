@@ -1,7 +1,6 @@
 from __future__ import division
 
 import math
-import random
 import time
 from collections import deque
 
