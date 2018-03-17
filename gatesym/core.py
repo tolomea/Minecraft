@@ -28,12 +28,18 @@ class Network(object):
         self._values.append(type_ == NOR)
         return index
 
+    def remove_gate(self, index):
+        raise NotImplemented
+
     def add_link(self, source_index, destination_index):
         dest_gate = self._gates[destination_index]
         assert dest_gate.type_ not in {TIE, SWITCH}
         self._gates[source_index].outputs.add(destination_index)
         dest_gate.inputs.add(source_index)
         self._queue.add(destination_index)
+
+    def remove_link(self, source_index, destination_index):
+        raise NotImplemented
 
     def read(self, gate_index):
         return self._values[gate_index]
