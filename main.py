@@ -60,7 +60,7 @@ TEXTURE_PATH = 'texture.png'
 
 # GRASS = tex_coords((1, 0), (0, 1), (0, 0))
 
-CLOCK, WIRE, GATE = range(3)
+CLOCK, WIRE, GATE = 'clock', 'wire', 'gate'
 
 TEXTURES = {
     CLOCK: tex_coords((1, 1)),
