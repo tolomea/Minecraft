@@ -59,9 +59,14 @@ def tex_coords(coord):
 TEXTURE_PATH = 'texture.png'
 
 # GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-CLOCK = tex_coords((1, 1))
-WIRE = tex_coords((2, 0))
-GATE = tex_coords((2, 1))
+
+CLOCK, WIRE, GATE = range(3)
+
+TEXTURES = {
+    CLOCK: tex_coords((1, 1)),
+    WIRE: tex_coords((2, 0)),
+    GATE: tex_coords((2, 1)),
+}
 
 FACES = [
     (0, 1, 0),
@@ -210,7 +215,7 @@ class Model(object):
                 return True
         return False
 
-    def add_block(self, position, texture, orientation=DOWN, immediate=True):  # GDW remove default orientation
+    def add_block(self, position, block, orientation=DOWN, immediate=True):  # GDW remove default orientation
         """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
@@ -226,7 +231,7 @@ class Model(object):
         """
         if position in self.world:
             self.remove_block(position, immediate)
-        self.world[position] = texture
+        self.world[position] = block
         self.orientation[position] = orientation
         self.sectors.setdefault(sectorize(position), []).append(position)
         if immediate:
@@ -284,15 +289,16 @@ class Model(object):
             Whether or not to show the block immediately.
 
         """
-        texture = self.world[position]
+        type_ = self.world[position]
+        texture = TEXTURES[type_]
         self.shown[position] = texture
         orientation = self.orientation[position]
         if immediate:
-            self._show_block(position, texture, orientation)
+            self._show_block(position, type_, texture, orientation)
         else:
             self._enqueue(self._show_block, position, texture, orientation)
 
-    def _show_block(self, position, texture, orientation):
+    def _show_block(self, position, type_, texture, orientation):
         """ Private implementation of the `show_block()` method.
 
         Parameters
@@ -304,7 +310,7 @@ class Model(object):
             generate.
 
         """
-        if texture == WIRE:
+        if type_ == WIRE:
             extension = add(position, mul(FACES[orientation], 0.5))
             vertex_data = cube_vertices(*position, 0.25) + cube_vertices(*extension, 0.25)
             texture_data = list(texture * 2)
@@ -659,8 +665,8 @@ class Window(pyglet.window.Window):
                     orientation = self.face_between_blocks(block, previous)
                     self.model.add_block(previous, self.block, orientation)
             elif button == pyglet.window.mouse.LEFT and block in self.model.world:
-                texture = self.model.world[block]
-                if texture != CLOCK:
+                block_type = self.model.world[block]
+                if block_type != CLOCK:
                     self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
