@@ -170,10 +170,6 @@ class Model(object):
         # Mapping from sector to a list of positions inside that sector.
         self.sectors = {}
 
-        # Simple function queue implementation. The queue is populated with
-        # _show_block() and _hide_block() calls
-        self.queue = deque()
-
         self.network = core.Network()
 
         self._initialize()
@@ -315,10 +311,7 @@ class Model(object):
         texture = TEXTURES[type_]
         self.shown[position] = texture
         orientation = self.orientation[position]
-        if immediate:
-            self._show_block(position, type_, texture, orientation)
-        else:
-            self._enqueue(self._show_block, position, texture, orientation)
+        self._show_block(position, type_, texture, orientation)
 
     def _show_block(self, position, type_, texture, orientation):
         """ Private implementation of the `show_block()` method.
@@ -362,10 +355,7 @@ class Model(object):
 
         """
         self.shown.pop(position)
-        if immediate:
-            self._hide_block(position)
-        else:
-            self._enqueue(self._hide_block, position)
+        self._hide_block(position)
 
     def _hide_block(self, position):
         """ Private implementation of the 'hide_block()` method.
@@ -417,37 +407,6 @@ class Model(object):
             self.show_sector(sector)
         for sector in hide:
             self.hide_sector(sector)
-
-    def _enqueue(self, func, *args):
-        """ Add `func` to the internal queue.
-
-        """
-        self.queue.append((func, args))
-
-    def _dequeue(self):
-        """ Pop the top function from the internal queue and call it.
-
-        """
-        func, args = self.queue.popleft()
-        func(*args)
-
-    def process_queue(self):
-        """ Process the entire queue while taking periodic breaks. This allows
-        the game loop to run smoothly. The queue contains calls to
-        _show_block() and _hide_block() so this method should be called if
-        add_block() or remove_block() was called with immediate=False
-
-        """
-        start = time.clock()
-        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
-            self._dequeue()
-
-    def process_entire_queue(self):
-        """ Process the entire queue with no breaks.
-
-        """
-        while self.queue:
-            self._dequeue()
 
 
 class Window(pyglet.window.Window):
@@ -599,12 +558,9 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
-        self.model.process_queue()
         sector = sectorize(self.position)
         if sector != self.sector:
             self.model.change_sectors(self.sector, sector)
-            if self.sector is None:
-                self.model.process_entire_queue()
             self.sector = sector
         m = max(int(dt / 0.025), 1)
         for _ in range(m):
