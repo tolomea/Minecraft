@@ -189,17 +189,6 @@ class Model(object):
             x, y, z = x + dx / m, y + dy / m, z + dz / m
         return key, previous
 
-    def exposed(self, position):
-        """ Returns False is given `position` is surrounded on all 6 sides by
-        blocks, True otherwise.
-
-        """
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world:
-                return True
-        return False
-
     def add_block(self, position, block, orientation=DOWN, immediate=True):  # GDW remove default orientation
         """ Add a block with the given `texture` and `position` to the world.
 
@@ -228,9 +217,7 @@ class Model(object):
         else:
             assert False
         if immediate:
-            if self.exposed(position):
-                self.show_block(position)
-            self.check_neighbors(position)
+            self.show_block(position)
 
     def remove_block(self, position, immediate=True):
         """ Remove the block at the given `position`.
@@ -247,28 +234,7 @@ class Model(object):
         del self.orientation[position]
         del self.line[position]
         if immediate:
-            if position in self.shown:
-                self.hide_block(position)
-            self.check_neighbors(position)
-
-    def check_neighbors(self, position):
-        """ Check all blocks surrounding `position` and ensure their visual
-        state is current. This means hiding blocks that are not exposed and
-        ensuring that all exposed blocks are shown. Usually used after a block
-        is added or removed.
-
-        """
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            key = (x + dx, y + dy, z + dz)
-            if key not in self.world:
-                continue
-            if self.exposed(key):
-                if key not in self.shown:
-                    self.show_block(key)
-            else:
-                if key in self.shown:
-                    self.hide_block(key)
+            self.hide_block(position)
 
     def show_block(self, position, immediate=True):
         """ Show the block at the given `position`. This method assumes the
