@@ -135,9 +135,6 @@ class Model(object):
         # This defines all the blocks that are currently in the world.
         self.world = {}
 
-        # Same mapping as `world` but only contains blocks that are shown.
-        self.shown = {}
-
         # Same mapping as `world` but contains block orientations
         self.orientation = {}
 
@@ -250,7 +247,6 @@ class Model(object):
         """
         type_ = self.world[position]
         texture = TEXTURES[type_]
-        self.shown[position] = texture
         orientation = self.orientation[position]
         self._show_block(position, type_, texture, orientation)
 
@@ -295,7 +291,6 @@ class Model(object):
             Whether or not to immediately remove the block from the canvas.
 
         """
-        self.shown.pop(position)
         self._hide_block(position)
 
     def _hide_block(self, position):
