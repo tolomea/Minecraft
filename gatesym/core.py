@@ -20,18 +20,28 @@ class Network(object):
         self._queue = set()
         self._watches = []
         self._log = []
+        self._free_list = []
 
     def add_gate(self, type_, cookie=None):
         assert type_ in [TIE, SWITCH, NOR]
-        index = len(self._gates)
-        self._gates.append(_Gate(type_, {cookie}))
+        gate = _Gate(type_, {cookie})
+        if self._free_list:
+            index = self._free_list.pop()
+            self._gates[index] = gate
+        else:
+            index = len(self._gates)
+            self._gates.append(gate)
         self._values.append(type_ == NOR)
         return index
 
     def remove_gate(self, index):
-        print("remove gate not implemented", index)
+        assert not self._gates[index].outputs
+        assert not self._gates[index].inputs
+        self._gates[index] = None
+        self._free_list.append(index)
 
     def add_link(self, source_index, destination_index):
+        print("add link", source_index, destination_index)
         dest_gate = self._gates[destination_index]
         assert dest_gate.type_ not in {TIE, SWITCH}
         self._gates[source_index].outputs.add(destination_index)
@@ -39,7 +49,10 @@ class Network(object):
         self._queue.add(destination_index)
 
     def remove_link(self, source_index, destination_index):
-        print("remove link not implemented", source_index, destination_index)
+        print("remove link", source_index, destination_index)
+        self._gates[source_index].outputs.remove(destination_index)
+        self._gates[destination_index].inputs.remove(source_index)
+        self._queue.add(destination_index)
 
     def read(self, gate_index):
         return self._values[gate_index]
