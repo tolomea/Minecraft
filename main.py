@@ -20,14 +20,17 @@ TICKS_PER_SEC = 60
 FLYING_SPEED = 10
 
 
-def cube_vertices(x, y, z, n):
+def cube_vertices(p, n):
     """ Return the vertices of the cube at position x, y, z with size 2*n.
 
     """
-    return box_vertices(x - n, y - n, z - n, x + n, y + n, z + n)
+    offset = [n, n, n]
+    return box_vertices(sub(p, offset), add(p, offset))
 
 
-def box_vertices(x1, y1, z1, x2, y2, z2):
+def box_vertices(p1, p2):
+    x1, y1, z1 = p1
+    x2, y2, z2 = p2
     return [
         x1, y2, z1, x1, y2, z2, x2, y2, z2, x2, y2, z1,  # top
         x1, y1, z1, x2, y1, z1, x2, y1, z2, x1, y1, z2,  # bottom
@@ -103,6 +106,10 @@ def sub(va, vb):
     return tuple(a - b for a, b in zip(va, vb))
 
 
+def div(va, s):
+    return tuple(a / s for a in va)
+
+
 def normalize(position):
     """ Accepts `position` of arbitrary precision and returns the block
     containing that position.
@@ -172,18 +179,16 @@ class Model(object):
 
         """
         m = 8
-        x, y, z = position
-        dx, dy, dz = vector
         key = None
         previous = None
         for _ in range(max_distance * m):
-            new = normalize((x, y, z))
+            new = normalize(position)
             if new != key:
                 previous = key
                 key = new
                 if key in self.world:
                     break
-            x, y, z = x + dx / m, y + dy / m, z + dz / m
+            position = add(position, div(vector, m))
         return key, previous
 
     def add_block(self, position, block, orientation=DOWN):  # GDW remove default orientation
@@ -243,10 +248,10 @@ class Model(object):
 
         if type_ == WIRE:
             extension = add(position, mul(FACES[orientation], 0.5))
-            vertex_data = cube_vertices(*position, 0.25) + cube_vertices(*extension, 0.25)
+            vertex_data = cube_vertices(position, 0.25) + cube_vertices(extension, 0.25)
             texture_data = list(texture * 2)
         else:
-            vertex_data = cube_vertices(*position, 0.5)
+            vertex_data = cube_vertices(position, 0.5)
             texture_data = list(texture)
 
         # create vertex list
@@ -634,8 +639,7 @@ class Window(pyglet.window.Window):
         x, y = self.rotation
         gl.rotatef(x, 0, 1, 0)
         gl.rotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
-        x, y, z = self.position
-        gl.translatef(-x, -y, -z)
+        gl.translatef(*mul(self.position, -1))
 
     def on_draw(self):
         """ Called by pyglet to draw the canvas.
@@ -661,7 +665,7 @@ class Window(pyglet.window.Window):
 
         """
         if selected:
-            vertex_data = cube_vertices(*selected, 0.51)
+            vertex_data = cube_vertices(selected, 0.51)
             gl.color3d(0, 0, 0)
             gl.polygon_mode(gl.FRONT_AND_BACK, gl.LINE)
             pyglet.graphics.draw(24, gl.QUADS, ('v3f/static', vertex_data))
