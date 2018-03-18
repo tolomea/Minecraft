@@ -681,7 +681,10 @@ class Window(pyglet.window.Window):
 
         m = self.model
         if sel in m.world:
-            self.label2.text = f'{sel}, {m.world[sel]}, {FACE_NAMES[m.orientation[sel]]}, {m.line[sel]}'
+            block = m.world[sel]
+            orientation = FACE_NAMES[m.orientation[sel]]
+            line = m.line[sel]
+            self.label2.text = f'{sel}, {block}, {orientation}, {line}'
         else:
             self.label2.text = 'None'
         self.label2.draw()
