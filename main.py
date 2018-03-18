@@ -1,15 +1,12 @@
 from __future__ import division
 
 import math
-import time
-from collections import deque
 
 import gl
 import glu
 
 import pyglet
 from pyglet import image
-from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
 from gatesym import core
@@ -59,7 +56,7 @@ def tex_coords(coord):
     return face * 6
 
 
-TEXTURE_PATH = 'texture.png'
+TEXTURE_PATH = 'texture2.png'
 
 # GRASS = tex_coords((1, 0), (0, 1), (0, 0))
 
@@ -128,6 +125,22 @@ def normalize(position):
     return (x, y, z)
 
 
+class MultiTextureGroup(pyglet.graphics.TextureGroup):
+    def __init__(self, unit, texture, parent=None):
+        super().__init__(texture, parent)
+        self.unit = unit
+
+    def set_state(self):
+        gl.active_texture(self.unit)
+        super().set_state()
+        gl.active_texture(gl.TEXTURE0)
+
+    def unset_state(self):
+        gl.active_texture(self.unit)
+        super().unset_state()
+        gl.active_texture(gl.TEXTURE0)
+
+
 class Model(object):
 
     def __init__(self):
@@ -136,7 +149,13 @@ class Model(object):
         self.batch = pyglet.graphics.Batch()
 
         # A TextureGroup manages an OpenGL texture.
-        self.group = TextureGroup(image.load(TEXTURE_PATH).get_texture())
+        pixels = [0, 0, 255] * 100
+        self.data = image.ImageData(1, len(pixels) // 3, 'RGB', bytes(pixels))
+        group = MultiTextureGroup(gl.TEXTURE0, self.data.get_texture())
+        self.group = MultiTextureGroup(gl.TEXTURE1, image.load(TEXTURE_PATH).get_texture(), group)
+
+        self.data.set_data('RGB', 1, bytes([255, 255, 0] * 100))
+        group.texture = self.data.get_texture()
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
@@ -287,7 +306,8 @@ class Model(object):
         self._shown[position] = self.batch.add(
             len(vertex_data) // 3, gl.QUADS, self.group,
             ('v3f/static', vertex_data),
-            ('t2f/static', texture_data),
+            ('0t2f/static', [0] * len(texture_data)),
+            ('1t2f/static', texture_data),
         )
 
     def hide_block(self, position):
@@ -803,6 +823,13 @@ def setup():
     # as smooth."
     gl.tex_parameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.tex_parameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+    gl.active_texture(gl.TEXTURE1)
+    gl.tex_envi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.DECAL)
+    gl.tex_parameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.tex_parameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.active_texture(gl.TEXTURE0)
+
     setup_fog()
 
 
