@@ -92,15 +92,15 @@ FACE_NAMES = [
 
 
 def add(va, vb):
-    return [a + b for a, b in zip(va, vb)]
+    return tuple(a + b for a, b in zip(va, vb))
 
 
 def mul(va, s):
-    return [a * s for a in va]
+    return tuple(a * s for a in va)
 
 
 def sub(va, vb):
-    return [a - b for a, b in zip(va, vb)]
+    return tuple(a - b for a, b in zip(va, vb))
 
 
 def normalize(position):
@@ -207,7 +207,7 @@ class Model(object):
         elif block == CLOCK:
             self.line[position] = self.network.add_gate(core.SWITCH)
         elif block == WIRE:
-            source = tuple(add(position, FACES[orientation]))
+            source = add(position, FACES[orientation])
             self.line[position] = self.line[source] if source in self.world else UNCONNECTED
         else:
             assert False
@@ -461,7 +461,7 @@ class Window(pyglet.window.Window):
         pos_norm = normalize(position)
         for face in FACES:  # check all surrounding blocks
             neighbour = add(pos_norm, face)
-            if tuple(neighbour) not in self.model.world:
+            if neighbour not in self.model.world:
                 continue
 
             res = [0, 0, 0]
@@ -474,11 +474,10 @@ class Window(pyglet.window.Window):
                 res = sub(res, mul(face, d - pad))
             pos = add(pos, res)
 
-        return tuple(pos)
+        return pos
 
     def face_between_blocks(self, src, dest):
-        vector = tuple(a - b for a, b in zip(src, dest))
-        return FACES.index(vector)
+        return FACES.index(sub(src, dest))
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
