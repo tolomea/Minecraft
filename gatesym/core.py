@@ -29,7 +29,7 @@ class Network(object):
         return index
 
     def remove_gate(self, index):
-        raise NotImplemented
+        print("remove gate not implemented", index)
 
     def add_link(self, source_index, destination_index):
         dest_gate = self._gates[destination_index]
@@ -39,7 +39,7 @@ class Network(object):
         self._queue.add(destination_index)
 
     def remove_link(self, source_index, destination_index):
-        raise NotImplemented
+        print("remove link not implemented", source_index, destination_index)
 
     def read(self, gate_index):
         return self._values[gate_index]

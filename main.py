@@ -208,12 +208,22 @@ class Model(object):
         self.world[position] = block
         self.orientation[position] = orientation
         if block == GATE:
-            self.line[position] = self.network.add_gate(core.NOR)
+            index = self.network.add_gate(core.NOR)
+            self.line[position] = index
+            for i in self.inputs(position):
+                if self.line[i] != UNCONNECTED:
+                    self.network.add_link(self.line[i], index)
+            for o in self.outputs(position):
+                self.update_line(o, index)
         elif block == CLOCK:
-            self.line[position] = self.network.add_gate(core.SWITCH)
+            index = self.network.add_gate(core.SWITCH)
+            self.line[position] = index
+            for o in self.outputs(position):
+                self.update_line(o, index)
         elif block == WIRE:
+            self.line[position] = UNCONNECTED
             source = add(position, FACES[orientation])
-            self.line[position] = self.line[source] if source in self.world else UNCONNECTED
+            self.update_line(position, self.line[source] if source in self.world else UNCONNECTED)
         else:
             assert False
         self.show_block(position)
@@ -227,6 +237,23 @@ class Model(object):
             The (x, y, z) position of the block to remove.
 
         """
+        assert position in self.world
+        block = self.world[position]
+        if block == GATE:
+            index = self.line[position]
+            for o in self.outputs(position):
+                self.update_line(o, UNCONNECTED)
+            for i in self.inputs(position):
+                if self.line[i] != UNCONNECTED:
+                    self.network.remove_link(self.line[i], index)
+            self.network.remove_gate(index)
+        elif block == CLOCK:
+            assert False
+        elif block == WIRE:
+            self.update_line(position, UNCONNECTED)
+        else:
+            assert False
+
         del self.world[position]
         del self.orientation[position]
         del self.line[position]
@@ -273,6 +300,47 @@ class Model(object):
             The (x, y, z) position of the block to hide.
         """
         self._shown.pop(position).delete()
+
+    def update_line(self, position, new_line):
+        assert self.world[position] == WIRE
+        old_line = self.line[position]
+        queue = [position]
+        while queue:
+            position = queue.pop()
+            if self.world[position] == WIRE:
+                self.line[position] = new_line
+                for o in self.outputs(position):
+                    queue.append(o)
+            elif self.world[position] == GATE:
+                index = self.line[position]
+                if old_line != UNCONNECTED:
+                    self.network.remove_link(old_line, index)
+                if new_line != UNCONNECTED:
+                    self.network.add_link(new_line, index)
+            else:
+                assert False
+
+    def neighbours(self, position):
+        assert position in self.world
+        for face in FACES:
+            neighbour = add(position, face)
+            if neighbour in self.world:
+                yield neighbour
+
+    def inputs(self, position):
+        assert position in self.world
+        if self.world[position] == WIRE:
+            return [add(position, FACES[self.orientation[position]])]
+        elif self.world[position] == GATE:
+            return [n for n in self.neighbours(position) if self.world[n] == WIRE and position not in self.inputs(n)]
+        elif self.world[position] == CLOCK:
+            return []
+        else:
+            assert False
+
+    def outputs(self, position):
+        assert position in self.world
+        return [n for n in self.neighbours(position) if position in self.inputs(n)]
 
 
 class Window(pyglet.window.Window):
