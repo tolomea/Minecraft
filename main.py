@@ -305,12 +305,15 @@ class Model(object):
         assert self.world[position] == WIRE
         old_line = self.line[position]
         queue = [position]
+        seen = {position}
         while queue:
             position = queue.pop()
             if self.world[position] == WIRE:
                 self.line[position] = new_line
                 for o in self.outputs(position):
-                    queue.append(o)
+                    if o not in seen:
+                        queue.append(o)
+                        seen.add(o)
             elif self.world[position] == GATE:
                 index = self.line[position]
                 if old_line != UNCONNECTED:
