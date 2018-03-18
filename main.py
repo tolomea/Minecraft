@@ -667,7 +667,7 @@ class Window(pyglet.window.Window):
             pyglet.graphics.draw(24, gl.QUADS, ('v3f/static', vertex_data))
             gl.polygon_mode(gl.FRONT_AND_BACK, gl.FILL)
 
-    def draw_label(self, selected):
+    def draw_label(self, sel):
         """ Draw the label in the top left of the screen.
 
         """
@@ -676,8 +676,8 @@ class Window(pyglet.window.Window):
         self.label.draw()
 
         m = self.model
-        if selected in m.world:
-            self.label2.text = f'{selected}, {m.world[selected]}, {FACE_NAMES[m.orientation[selected]]}'
+        if sel in m.world:
+            self.label2.text = f'{sel}, {m.world[sel]}, {FACE_NAMES[m.orientation[sel]]}, {m.line[sel]}'
         else:
             self.label2.text = 'None'
         self.label2.draw()
