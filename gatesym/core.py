@@ -70,14 +70,15 @@ class Network(object):
         for index in self._queue:
             gate = gates[index]
 
-            if gate.type_ == NOR:
-                res = not(any(values[i] for i in gate.inputs))
-            else:
-                assert False, gate.type_
+            if gate:
+                if gate.type_ == NOR:
+                    res = not(any(values[i] for i in gate.inputs))
+                else:
+                    assert False, gate.type_
 
-            if values[index] != res:
-                values[index] = res
-                queue.update(gate.outputs)
+                if values[index] != res:
+                    values[index] = res
+                    queue.update(gate.outputs)
 
         self._queue = queue
         return bool(queue)
