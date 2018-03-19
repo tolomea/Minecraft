@@ -9,7 +9,7 @@ class _Gate(collections.namedtuple('_Gate', 'type_, inputs, outputs, cookies')):
     # internal gate format
 
     def __new__(cls, type_, cookies):
-        return super().__new__(cls, type_, set(), set(), cookies)
+        return super().__new__(cls, type_, list(), list(), cookies)
 
 
 class Network(object):
@@ -43,9 +43,10 @@ class Network(object):
     def add_link(self, source_index, destination_index):
         print("add link", source_index, destination_index)
         dest_gate = self._gates[destination_index]
+        source_gate = self._gates[source_index]
         assert dest_gate.type_ not in {TIE, SWITCH}
-        self._gates[source_index].outputs.add(destination_index)
-        dest_gate.inputs.add(source_index)
+        source_gate.outputs.append(destination_index)
+        dest_gate.inputs.append(source_index)
         self._queue.add(destination_index)
 
     def remove_link(self, source_index, destination_index):
