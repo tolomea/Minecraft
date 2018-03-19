@@ -246,6 +246,7 @@ class Model(object):
             generate.
 
         """
+        print('add_block', position, block, FACES[orientation])
         if position in self.world:
             self.remove_block(position)
         self.world[position] = block
@@ -280,6 +281,7 @@ class Model(object):
             The (x, y, z) position of the block to remove.
 
         """
+        print('remove_block', position)
         assert position in self.world
         block = self.world[position]
         if block == GATE:
@@ -336,11 +338,6 @@ class Model(object):
         else:
             vertex_data = cube_vertices(position, 0.5)
             texture_data = texture
-
-        print(position)
-        print(texture_data)
-        print(light_texture_data)
-        print()
 
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
@@ -412,7 +409,6 @@ class Model(object):
 
     def clock(self):
         self.network.write(self.clock_index, not self.network.read(self.clock_index))
-        print('clock', self.get_pixels())
 
 
 class Window(pyglet.window.Window):
