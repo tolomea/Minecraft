@@ -265,9 +265,11 @@ class Model(object):
             for o in self.outputs(position):
                 self.update_line(o, index)
         elif block == WIRE:
-            self.line[position] = UNCONNECTED
             source = add(position, FACES[orientation])
-            self.update_line(position, self.line[source] if source in self.world else UNCONNECTED)
+            index = self.line[source] if source in self.world else UNCONNECTED
+            self.line[position] = index
+            for o in self.outputs(position):
+                self.update_line(o, index)
         else:
             assert False
         self.show_block(position)
@@ -368,11 +370,14 @@ class Model(object):
         while queue:
             position = queue.pop()
             if self.world[position] == WIRE:
-                self.line[position] = new_line
-                for o in self.outputs(position):
-                    if o not in seen:
-                        queue.append(o)
-                        seen.add(o)
+                if self.line[position] != new_line:
+                    self.line[position] = new_line
+                    self.hide_block(position)
+                    self.show_block(position)
+                    for o in self.outputs(position):
+                        if o not in seen:
+                            queue.append(o)
+                            seen.add(o)
             elif self.world[position] == GATE:
                 index = self.line[position]
                 if old_line != UNCONNECTED:
