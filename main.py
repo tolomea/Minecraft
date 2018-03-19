@@ -140,6 +140,9 @@ class MultiTextureGroup(pyglet.graphics.TextureGroup):
         super().unset_state()
         gl.active_texture(gl.TEXTURE0)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Model(object):
 
@@ -149,13 +152,8 @@ class Model(object):
         self.batch = pyglet.graphics.Batch()
 
         # A TextureGroup manages an OpenGL texture.
-        pixels = [0, 0, 255] * 100
-        self.data = image.ImageData(1, len(pixels) // 3, 'RGB', bytes(pixels))
-        group = MultiTextureGroup(gl.TEXTURE0, self.data.get_texture())
-        self.group = MultiTextureGroup(gl.TEXTURE1, image.load(TEXTURE_PATH).get_texture(), group)
-
-        self.data.set_data('RGB', 1, bytes([255, 255, 0] * 100))
-        group.texture = self.data.get_texture()
+        group = MultiTextureGroup(gl.TEXTURE1, image.load(TEXTURE_PATH).get_texture())
+        self.group = MultiTextureGroup(gl.TEXTURE0, image.ImageData(1, 1, 'RGB', bytes([1, 2, 3])).get_texture(), group)
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
@@ -174,13 +172,38 @@ class Model(object):
 
         self._initialize()
 
+    def get_pixels(self):
+        return self.network.dump_values(
+            prefix=[64, 64, 64],  # unconnected, grey
+            nor_low=[0, 128, 0],  # gate off, dark green
+            nor_high=[0, 255, 0],  # gate on, bright green
+            other_low=[0, 0, 128],  # clock off, dark blue
+            other_high=[0, 0, 255],  # clock on, bight blue
+        )
+
+    def update_texture(self):
+        pixels = bytes(self.get_pixels())
+#        width = len(pixels) // 3
+        width = 1024
+        self.group.texture = image.ImageData(width, 1, 'RGB', pixels).get_texture()
+
     def _initialize(self):
         """ Initialize the world by placing all the blocks.
 
         """
-        position = (0, 0, -5)
+        position = (-2, 0, -5)
         self.add_block(position, CLOCK)
         self.clock_index = self.line[position]
+
+        offset = (1, 0, 0)
+        position = add(position, offset)
+        self.add_block(position, WIRE, LEFT)
+        position = add(position, offset)
+        self.add_block(position, GATE, LEFT)
+        position = add(position, offset)
+        self.add_block(position, WIRE, LEFT)
+        position = add(position, offset)
+        self.add_block(position, GATE, LEFT)
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -292,13 +315,31 @@ class Model(object):
         texture = TEXTURES[type_]
         orientation = self.orientation[position]
 
+        x = self.line[position] + 1  # leave space for the unconnected one
+        width = 1024
+
+        def t(i):
+            return (2 * i + 1) / (2 * width)
+        light_texture_data = [
+            t(x), 0,
+            t(x), 0,
+            t(x), 0,
+            t(x), 0,
+        ] * 6
+
         if type_ == WIRE:
             extension = add(position, mul(FACES[orientation], 0.5))
             vertex_data = cube_vertices(position, 0.25) + cube_vertices(extension, 0.25)
-            texture_data = list(texture * 2)
+            texture_data = texture * 2
+            light_texture_data = light_texture_data * 2
         else:
             vertex_data = cube_vertices(position, 0.5)
-            texture_data = list(texture)
+            texture_data = texture
+
+        print(position)
+        print(texture_data)
+        print(light_texture_data)
+        print()
 
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
@@ -306,7 +347,7 @@ class Model(object):
         self._shown[position] = self.batch.add(
             len(vertex_data) // 3, gl.QUADS, self.group,
             ('v3f/static', vertex_data),
-            ('0t2f/static', [0] * len(texture_data)),
+            ('0t2f/static', light_texture_data),
             ('1t2f/static', texture_data),
         )
 
@@ -364,6 +405,13 @@ class Model(object):
     def outputs(self, position):
         assert position in self.world
         return [n for n in self.neighbours(position) if position in self.inputs(n)]
+
+    def update(self):
+        self.network.step()
+
+    def clock(self):
+        self.network.write(self.clock_index, not self.network.read(self.clock_index))
+        print('clock', self.get_pixels())
 
 
 class Window(pyglet.window.Window):
@@ -434,6 +482,8 @@ class Window(pyglet.window.Window):
             anchor_y='top',
             color=(0, 0, 0, 255),
         )
+
+        self.last_clock = 0
 
         # This call schedules the `update()` method to be called
         # TICKS_PER_SEC. This is the main game event loop.
@@ -512,7 +562,7 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
-        m = max(int(dt / 0.025), 1)
+        m = max(int(dt / 0.025), 1)  # todo how does this relate to tics per second
         for _ in range(m):
             self._update(dt / m)
 
@@ -532,6 +582,12 @@ class Window(pyglet.window.Window):
         motion_vec = mul(self.get_motion_vector(), d)
         # collisions
         self.position = self.collide(add(self.position, motion_vec))
+
+        self.model.update()
+        self.last_clock += dt
+        if self.last_clock > 1:
+            self.last_clock -= 1
+            self.model.clock()
 
     def collide(self, position):
         """ Checks to see if the player at the given `position`
@@ -739,6 +795,7 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         gl.color3d(1, 1, 1)
+        self.model.update_texture()
         self.model.batch.draw()
         selected = self.get_focused_block()
         self.draw_focused_block(selected)

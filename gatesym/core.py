@@ -134,3 +134,12 @@ class Network(object):
     def get_size(self):
         """ total count of all gates """
         return len(self._gates)
+
+    def dump_values(self, prefix, nor_low, nor_high, other_low, other_high):
+        res = prefix
+        for gate, value in zip(self._gates, self._values):
+            if gate and gate.type_ == NOR:
+                res.extend(nor_high if value else nor_low)
+            else:
+                res.extend(other_high if value else other_low)
+        return res
