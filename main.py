@@ -56,7 +56,7 @@ def tex_coords(coord):
     return face * 6
 
 
-TEXTURE_PATH = 'texture2.png'
+TEXTURE_PATH = 'texture3.png'
 
 # GRASS = tex_coords((1, 0), (0, 1), (0, 0))
 
@@ -153,7 +153,8 @@ class Model(object):
 
         # A TextureGroup manages an OpenGL texture.
         group = MultiTextureGroup(gl.TEXTURE1, image.load(TEXTURE_PATH).get_texture())
-        self.group = MultiTextureGroup(gl.TEXTURE0, image.ImageData(1, 1, 'RGB', bytes([1, 2, 3])).get_texture(), group)
+        data = image.ImageData(1, 1, 'RGB', bytes([1, 2, 3]))
+        self.group = MultiTextureGroup(gl.TEXTURE0, data.get_texture(), group)
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
