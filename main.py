@@ -258,18 +258,18 @@ class Model(object):
                 if self.line[i] != UNCONNECTED:
                     self.network.add_link(self.line[i], index)
             for o in self.outputs(position):
-                self.update_line(o, index)
+                self.update_line(o, UNCONNECTED, index)
         elif block == CLOCK:
             index = self.network.add_gate(core.SWITCH)
             self.line[position] = index
             for o in self.outputs(position):
-                self.update_line(o, index)
+                self.update_line(o, UNCONNECTED, index)
         elif block == WIRE:
             source = add(position, FACES[orientation])
             index = self.line[source] if source in self.world else UNCONNECTED
             self.line[position] = index
             for o in self.outputs(position):
-                self.update_line(o, index)
+                self.update_line(o, UNCONNECTED, index)
         else:
             assert False
         self.show_block(position)
@@ -286,10 +286,10 @@ class Model(object):
         print('remove_block', position)
         assert position in self.world
         block = self.world[position]
+        index = self.line[position]
         if block == GATE:
-            index = self.line[position]
             for o in self.outputs(position):
-                self.update_line(o, UNCONNECTED)
+                self.update_line(o, index, UNCONNECTED)
             for i in self.inputs(position):
                 if self.line[i] != UNCONNECTED:
                     self.network.remove_link(self.line[i], index)
@@ -297,7 +297,7 @@ class Model(object):
         elif block == CLOCK:
             assert False
         elif block == WIRE:
-            self.update_line(position, UNCONNECTED)
+            self.update_line(position, index, UNCONNECTED)
         else:
             assert False
 
@@ -362,9 +362,7 @@ class Model(object):
         """
         self._shown.pop(position).delete()
 
-    def update_line(self, position, new_line):
-        assert self.world[position] == WIRE
-        old_line = self.line[position]
+    def update_line(self, position, old_line, new_line):
         queue = [position]
         seen = {position}
         while queue:
